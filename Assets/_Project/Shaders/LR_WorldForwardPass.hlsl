@@ -106,7 +106,7 @@ void LRWorldFragment(
     half3 albedo = lerp(input.color.rgb * _BaseTint.rgb, _SnowColor.rgb, snow);
 
     // ---- Мерцание снега: редкие ячейки, зависят от направления на солнце и взгляда ----
-    half3 emission = input.color.rgb * (input.color.a * _EmissionIntensity);
+    half3 emission = input.color.rgb * _EmissionTint.rgb * (input.color.a * _EmissionIntensity);
     if (_SparkleStrength > 0 && snow > 0.01)
     {
         Light mainLight = GetMainLight(inputData.shadowCoord, inputData.positionWS, inputData.shadowMask);

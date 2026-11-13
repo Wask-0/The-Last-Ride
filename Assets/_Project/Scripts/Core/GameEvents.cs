@@ -43,6 +43,26 @@ namespace LastRide.Core
         public FireSourceKind To;
     }
 
+    /// <summary>Заслонка печки открылась / закрылась (звук 10.3, подсказки обучения).</summary>
+    public struct StoveFlapChanged : IGameEvent { public bool Open; }
+
+    /// <summary>Подкинули топливо в огонь (Added — сколько секунд реально добавилось, остальное сгорело). Для A1_02, звука, обучения.</summary>
+    public struct FuelThrown : IGameEvent
+    {
+        public LastRide.Fire.FuelType Fuel;
+        public FireSourceKind Source;
+        public float AddedSeconds;
+    }
+
+    // ---- Инвентарь ----
+    /// <summary>Изменился счётчик топлива (Delta &gt; 0 — подобрали, &lt; 0 — потратили, 0 — сброс).</summary>
+    public struct InventoryChanged : IGameEvent
+    {
+        public LastRide.Fire.FuelType Fuel;
+        public int Count;
+        public int Delta;
+    }
+
     // ---- Тепло ----
     /// <summary>Тепло пересекло критический порог (вниз — Entered=true, вверх — false).</summary>
     public struct WarmthCritical : IGameEvent { public bool Entered; }

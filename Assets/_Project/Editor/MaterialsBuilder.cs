@@ -63,9 +63,26 @@ namespace LastRide.Editor
                 m.SetFloat("_FogAmount", 0.15f);
             });
 
+            // Искры из трубы и лампы: частицы на URP Particles/Unlit, цвет HDR — ловится Bloom.
+            if (AssetDatabase.LoadAssetAtPath<Material>(SparkPath) == null)
+            {
+                var particleShader = Shader.Find("Universal Render Pipeline/Particles/Unlit");
+                if (particleShader != null)
+                {
+                    GeneratedAssets.EnsureFolder(Folder.TrimEnd('/'));
+                    var spark = new Material(particleShader) { name = "M_Spark" };
+                    spark.SetColor("_BaseColor", new Color(4f, 2.1f, 0.6f, 1f));
+                    AssetDatabase.CreateAsset(spark, SparkPath);
+                }
+                else Debug.LogError("[MaterialsBuilder] Шейдер URP Particles/Unlit не найден.");
+            }
+
             AssetDatabase.SaveAssets();
             Debug.Log("[The Last Ride] Materials ready: " + Folder);
         }
+
+        public const string SparkPath = Folder + "M_Spark.mat";
+        public static Material Spark => LoadOrCreate(SparkPath);
 
         public static Material World => LoadOrCreate(WorldPath);
         public static Material Frosted => LoadOrCreate(FrostedPath);

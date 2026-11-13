@@ -1,0 +1,87 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &5672977619675857653
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1421466571093276556, guid: 0646325c0ffa27b45ae8fb7af86c716c, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1421466571093276556, guid: 0646325c0ffa27b45ae8fb7af86c716c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1421466571093276556, guid: 0646325c0ffa27b45ae8fb7af86c716c, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1421466571093276556, guid: 0646325c0ffa27b45ae8fb7af86c716c, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1421466571093276556, guid: 0646325c0ffa27b45ae8fb7af86c716c, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1421466571093276556, guid: 0646325c0ffa27b45ae8fb7af86c716c, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1421466571093276556, guid: 0646325c0ffa27b45ae8fb7af86c716c, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1421466571093276556, guid: 0646325c0ffa27b45ae8fb7af86c716c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1421466571093276556, guid: 0646325c0ffa27b45ae8fb7af86c716c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1421466571093276556, guid: 0646325c0ffa27b45ae8fb7af86c716c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8294158244758131869, guid: 0646325c0ffa27b45ae8fb7af86c716c, type: 3}
+      propertyPath: m_Name
+      value: Fuel_Planks
+      objectReference: {fileID: 0}
+    - target: {fileID: 8294158244758131869, guid: 0646325c0ffa27b45ae8fb7af86c716c, type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8294158244758131869, guid: 0646325c0ffa27b45ae8fb7af86c716c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4802957834418606977}
+  m_SourcePrefab: {fileID: 100100000, guid: 0646325c0ffa27b45ae8fb7af86c716c, type: 3}
+--- !u!1 &4440747059555522152 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8294158244758131869, guid: 0646325c0ffa27b45ae8fb7af86c716c, type: 3}
+  m_PrefabInstance: {fileID: 5672977619675857653}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &4802957834418606977
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4440747059555522152}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5dc61673f4d994468aa763e2af578a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: LastRide::LastRide.Fire.FuelPickup
+  fuel: {fileID: 11400000, guid: 35df1147f8013fe43828f95961e766bb, type: 2}
+  amount: 1
+  pickupId: 
+  optional: 1

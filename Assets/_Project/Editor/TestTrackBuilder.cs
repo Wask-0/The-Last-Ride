@@ -135,15 +135,28 @@ namespace LastRide.Editor
             boarding.van = van.GetComponent<LastRide.Vehicle.VanController>();
             boarding.robot = robot.GetComponent<LastRide.Player.RobotController>();
             bootstrap.AddComponent<LastRide.UI.InteractionPromptView>();
+            bootstrap.AddComponent<LastRide.UI.StovePanel>();
+            bootstrap.AddComponent<LastRide.UI.Hud>();
 
             // Предметы для проверки луча и подсказок «[E] …» (настоящий подбор — в 5.1).
-            var fuelSpots = new[] { ("Fuel/Fuel_Planks", "Подобрать доски", new Vector3(-4f, 0.15f, -76f)),
-                                    ("Fuel/Fuel_Kindling", "Подобрать щепки", new Vector3(-6f, 0.15f, -79f)),
-                                    ("Fuel/Fuel_Briquette", "Подобрать брикет", new Vector3(-3f, 0.15f, -83f)) };
-            foreach (var (path, text, pos) in fuelSpots)
+            var segment = new GameObject("PickupSegment_Test");
+            segment.transform.SetParent(root, false);
+            segment.AddComponent<LastRide.Fire.PickupSegment>().segmentId = "test";
+            var fuelSpots = new[] { ("planks", new Vector3(-4f, 0.15f, -76f)),
+                                    ("kindling", new Vector3(-6f, 0.15f, -79f)),
+                                    ("briquette", new Vector3(-3f, 0.15f, -83f)),
+                                    ("kindling", new Vector3(-8f, 0.15f, -75f)),
+                                    ("planks", new Vector3(-7f, 0.15f, -84f)),
+                                    ("kindling", new Vector3(-10f, 0.15f, -80f)) };
+            for (int i = 0; i < fuelSpots.Length; i++)
             {
-                var item = PlacePrefab(root, path, pos, 20f);
-                item.AddComponent<LastRide.DebugTools.DebugInteractable>().prompt = text;
+                var (fuelId, pos) = fuelSpots[i];
+                var item = (GameObject)PrefabUtility.InstantiatePrefab(GameplayPrefabsBuilder.Fuel(fuelId), segment.transform);
+                item.transform.SetPositionAndRotation(pos, Quaternion.Euler(0f, 20f + i * 47f, 0f));
+                item.name = $"{fuelId}_{i}";
+                var pickup = item.GetComponent<LastRide.Fire.FuelPickup>();
+                pickup.pickupId = $"test_{fuelId}_{i}";
+                pickup.optional = true;
             }
 
             // ---- Камера, свет (тёплый закат акта 1), туман ----

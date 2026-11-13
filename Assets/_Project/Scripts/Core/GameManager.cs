@@ -25,6 +25,12 @@ namespace LastRide.Core
 
         public GameBalance Balance => Config != null ? Config.balance : null;
 
+        /// <summary>Инвентарь топлива (общий для робота, печки и лампы).</summary>
+        public LastRide.Fire.Inventory Inventory { get; } = new LastRide.Fire.Inventory();
+
+        /// <summary>Искра: запас горения печки/лампы, тление, угасание (ТЗ 4.2).</summary>
+        public LastRide.Fire.SparkFire Spark { get; private set; }
+
         /// <summary>Множитель скорости времени для отладки (F5). На паузе время всё равно стоит.</summary>
         public float DebugTimeMultiplier
         {
@@ -67,10 +73,19 @@ namespace LastRide.Core
             Config = GameConfig.Load();
             Difficulty = Config != null ? Config.defaultDifficulty : null;
             GameInput.Initialize();
+            Spark = new LastRide.Fire.SparkFire(Balance);
+            DebugTools.DebugOverlay.RegisterLine("Инвентарь", () => Inventory.ToString());
+            DebugTools.DebugOverlay.RegisterLine("Огонь", () => Spark.ToString());
 
             // Запуск Play Mode прямо со сцены Game (в редакторе) — сразу играем.
             State = SceneManager.GetActiveScene().name == SceneNames.MainMenu ? GameState.MainMenu : GameState.Playing;
             ApplyStateSideEffects();
+        }
+
+        private void Update()
+        {
+            // Огонь горит всегда, пока идёт игра — и в фургоне, и пока робот снаружи. На паузе timeScale = 0.
+            if (State == GameState.Playing) Spark.Tick(Time.deltaTime);
         }
 
         private void OnDestroy()

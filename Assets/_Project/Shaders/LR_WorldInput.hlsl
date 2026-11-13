@@ -16,6 +16,7 @@ CBUFFER_START(UnityPerMaterial)
     half  _SparkleThreshold;
     half  _SparkleDistance;
     half  _EmissionIntensity;
+    half4 _EmissionTint;
     half  _FogAmount;
 CBUFFER_END
 

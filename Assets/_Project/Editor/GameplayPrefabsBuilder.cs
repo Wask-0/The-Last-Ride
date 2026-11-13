@@ -1,4 +1,5 @@
 using LastRide.Core;
+using LastRide.ProcGen.Models;
 using LastRide.Vehicle;
 using UnityEditor;
 using UnityEngine;
@@ -24,6 +25,8 @@ namespace LastRide.Editor
             GeneratedAssets.EnsureFolder(Root.TrimEnd('/'));
             BuildVan();
             BuildRobot();
+            BuildLamp();
+            foreach (var id in FuelIds) BuildFuel(id);
             AssetDatabase.SaveAssets();
             Debug.Log("[The Last Ride] Gameplay prefabs ready: " + Root);
         }
@@ -44,8 +47,156 @@ namespace LastRide.Editor
             SetLayerRecursive(root, LayerMask.NameToLayer(Layers.Vehicle));
             if (root.GetComponent<Rigidbody>() == null) root.AddComponent<Rigidbody>();
             if (root.GetComponent<VanController>() == null) root.AddComponent<VanController>();
+            // Печка: свет в окне, свечение стекла и искры из трубы зависят от запаса огня.
+            AttachSparkGlow(root, LastRide.Core.FireSourceKind.Stove, Anchors.StoveLight, "Window", Anchors.ChimneyTop, new Vector3(0f, 0.05f, 0f), 0.06f);
             PrefabUtility.SaveAsPrefabAsset(root, VanPath);
             PrefabUtility.UnloadPrefabContents(root);
+        }
+
+        /// <summary>id типов топлива (совпадают с FuelType.id и именами префабов Fuel_*).</summary>
+        public static readonly string[] FuelIds = { "kindling", "planks", "briquette" };
+
+        private static string FuelModelName(string id) => id switch
+        {
+            "kindling" => "Fuel_Kindling",
+            "planks" => "Fuel_Planks",
+            _ => "Fuel_Briquette"
+        };
+
+        public static string FuelPath(string id) => Root + FuelModelName(id) + ".prefab";
+        public static GameObject Fuel(string id) => AssetDatabase.LoadAssetAtPath<GameObject>(FuelPath(id));
+
+        /// <summary>Подбираемое топливо: Variant от Generated/Prefabs/Fuel/Fuel_*, слой Interactable, компонент FuelPickup.</summary>
+        private static void BuildFuel(string id)
+        {
+            string path = FuelPath(id);
+            if (Fuel(id) == null)
+            {
+                var src = PrefabBuilder.Load("Fuel/" + FuelModelName(id));
+                if (src == null) { Debug.LogError("[The Last Ride] Нет модели топлива " + FuelModelName(id)); return; }
+                var instance = (GameObject)PrefabUtility.InstantiatePrefab(src);
+                instance.name = FuelModelName(id);
+                PrefabUtility.SaveAsPrefabAsset(instance, path);
+                Object.DestroyImmediate(instance);
+            }
+
+            var root = PrefabUtility.LoadPrefabContents(path);
+            SetLayerRecursive(root, LayerMask.NameToLayer(Layers.Interactable));
+            var pickup = root.GetComponent<LastRide.Fire.FuelPickup>();
+            if (pickup == null) pickup = root.AddComponent<LastRide.Fire.FuelPickup>();
+            var cfg = GameConfig.Load();
+            if (cfg != null) pickup.fuel = cfg.GetFuel(id);
+            PrefabUtility.SaveAsPrefabAsset(root, path);
+            PrefabUtility.UnloadPrefabContents(root);
+        }
+
+        public const string LampPath = Root + "Lamp.prefab";
+        public static GameObject Lamp => AssetDatabase.LoadAssetAtPath<GameObject>(LampPath);
+
+        /// <summary>Лампа (акт 3): Variant от Props/Lamp с визуалом Искры (свет пламени, стекло, искры).</summary>
+        private static void BuildLamp()
+        {
+            if (Lamp == null)
+            {
+                var src = PrefabBuilder.Load("Props/Lamp");
+                if (src == null) { Debug.LogError("[The Last Ride] Нет модели лампы Props/Lamp."); return; }
+                var instance = (GameObject)PrefabUtility.InstantiatePrefab(src);
+                instance.name = "Lamp";
+                PrefabUtility.SaveAsPrefabAsset(instance, LampPath);
+                Object.DestroyImmediate(instance);
+            }
+
+            var root = PrefabUtility.LoadPrefabContents(LampPath);
+            AttachSparkGlow(root, LastRide.Core.FireSourceKind.Lamp, Anchors.FlameLight, "Glass", Anchors.FlameLight, new Vector3(0f, 0.04f, 0f), 0.035f);
+            PrefabUtility.SaveAsPrefabAsset(root, LampPath);
+            PrefabUtility.UnloadPrefabContents(root);
+        }
+
+        /// <summary>Добавляет (или обновляет ссылки) SparkGlow: свет, стекло и система частиц у якоря.</summary>
+        private static void AttachSparkGlow(GameObject root, LastRide.Core.FireSourceKind kind, string lightAnchor, string glassPart,
+                                            string sparksAnchor, Vector3 sparksOffset, float sparkSize)
+        {
+            var glow = root.GetComponent<LastRide.Fire.SparkGlow>();
+            if (glow == null) glow = root.AddComponent<LastRide.Fire.SparkGlow>();
+            glow.kind = kind;
+
+            var lightT = FindDeep(root.transform, lightAnchor);
+            glow.glowLight = lightT != null ? lightT.GetComponent<Light>() : null;
+
+            var glass = FindDeep(root.transform, glassPart);
+            glow.glassRenderers = glass != null && glass.GetComponent<Renderer>() != null
+                ? new[] { glass.GetComponent<Renderer>() }
+                : new Renderer[0];
+
+            var anchor = FindDeep(root.transform, sparksAnchor);
+            var sparksT = FindDeep(root.transform, "Sparks_" + kind);
+            if (sparksT == null)
+            {
+                sparksT = new GameObject("Sparks_" + kind).transform;
+                sparksT.SetParent(anchor != null ? anchor : root.transform, false);
+            }
+            sparksT.localPosition = sparksOffset;
+            sparksT.localRotation = Quaternion.Euler(-90f, 0f, 0f); // конус смотрит вверх
+            var ps = sparksT.GetComponent<ParticleSystem>();
+            if (ps == null) ps = sparksT.gameObject.AddComponent<ParticleSystem>();
+            ConfigureSparks(ps, sparkSize);
+            glow.sparks = ps;
+
+            if (glow.glowLight == null || glow.glassRenderers.Length == 0)
+                Debug.LogWarning($"[The Last Ride] SparkGlow {kind}: не найден свет '{lightAnchor}' или стекло '{glassPart}'.");
+        }
+
+        private static void ConfigureSparks(ParticleSystem ps, float size)
+        {
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            var main = ps.main;
+            main.playOnAwake = false;
+            main.loop = true;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+            main.startLifetime = new ParticleSystem.MinMaxCurve(0.7f, 1.4f);
+            main.startSpeed = new ParticleSystem.MinMaxCurve(0.8f, 2.2f);
+            main.startSize = new ParticleSystem.MinMaxCurve(size * 0.6f, size);
+            main.gravityModifier = -0.05f;
+            main.maxParticles = 80;
+
+            var emission = ps.emission;
+            emission.enabled = true;
+            emission.rateOverTime = 0f; // скорость задаёт SparkGlow
+
+            var shape = ps.shape;
+            shape.enabled = true;
+            shape.shapeType = ParticleSystemShapeType.Cone;
+            shape.angle = 18f;
+            shape.radius = size * 0.5f;
+
+            var col = ps.colorOverLifetime;
+            col.enabled = true;
+            var grad = new Gradient();
+            grad.SetKeys(
+                new[] { new GradientColorKey(new Color(1f, 0.85f, 0.5f), 0f), new GradientColorKey(new Color(0.55f, 0.12f, 0.02f), 1f) },
+                new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(1f, 1f) });
+            col.color = grad;
+
+            var sol = ps.sizeOverLifetime;
+            sol.enabled = true;
+            sol.size = new ParticleSystem.MinMaxCurve(1f, new AnimationCurve(new Keyframe(0f, 1f), new Keyframe(1f, 0f)));
+
+            var noise = ps.noise;
+            noise.enabled = true;
+            noise.strength = 0.4f;
+            noise.frequency = 0.8f;
+
+            var renderer = ps.GetComponent<ParticleSystemRenderer>();
+            renderer.sharedMaterial = MaterialsBuilder.Spark;
+            renderer.renderMode = ParticleSystemRenderMode.Billboard;
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+        }
+
+        private static Transform FindDeep(Transform root, string name)
+        {
+            foreach (var t in root.GetComponentsInChildren<Transform>(true)) if (t.name == name) return t;
+            return null;
         }
 
         public const string RobotPath = Root + "Robot.prefab";

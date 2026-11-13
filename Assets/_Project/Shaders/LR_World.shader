@@ -23,6 +23,7 @@ Shader "The Last Ride/World"
 
         [Header(Emission)]
         _EmissionIntensity("Emission Intensity (HDR)", Range(0, 30)) = 4
+        _EmissionTint("Emission Tint (multiplies glow color)", Color) = (1, 1, 1, 1)
 
         [Header(Fog)]
         _FogAmount("Fog Amount (1 = normal, 0 = ignores fog)", Range(0, 1)) = 1

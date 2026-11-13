@@ -12,6 +12,7 @@ namespace LastRide.Core
         public FireSettings fire = new FireSettings();
         public WarmthSettings warmth = new WarmthSettings();
         public MovementSettings movement = new MovementSettings();
+        public SparkVisualSettings sparkVisual = new SparkVisualSettings();
         public VanSettings van = new VanSettings();
         public GustSettings gusts = new GustSettings();
         public VanCameraSettings vanCamera = new VanCameraSettings();
@@ -49,6 +50,43 @@ namespace LastRide.Core
             [Min(0)] public float jamDuration = 0.2f;
             [Tooltip("Интервал между заеданиями при тепле на пороге (x) и при 0 (y), с.")]
             public Vector2 jamInterval = new Vector2(4f, 1.2f);
+        }
+
+        /// <summary>Внешний вид Искры (ТЗ 4.2, 8.2): яркость — функция запаса, мерцание, тление. Читается каждый кадр.</summary>
+        [Serializable]
+        public sealed class SparkVisualSettings
+        {
+            [Header("Горение")]
+            [Tooltip("Яркость (0..1) при почти нулевом запасе. При полном запасе — 1.")]
+            [Range(0, 1)] public float minBurnBrightness = 0.3f;
+            [Tooltip("Степень кривой яркости от запаса: < 1 — быстро набирает яркость при малых запасах.")]
+            [Min(0.1f)] public float brightnessExponent = 0.5f;
+            [Tooltip("Цвет пламени.")]
+            public Color flameColor = new Color(1f, 0.62f, 0.28f);
+            [Tooltip("Частота мерцания света (шум), Гц.")]
+            [Min(0)] public float flickerHz = 9f;
+            [Tooltip("Глубина мерцания света (доля яркости).")]
+            [Range(0, 1)] public float flickerAmount = 0.18f;
+            [Tooltip("Искр в секунду при полном запасе (с ростом яркости растёт квадратично).")]
+            [Min(0)] public float maxSparksPerSecond = 16f;
+
+            [Header("Тление")]
+            [Tooltip("Яркость тлеющего угля (0..1).")]
+            [Range(0, 1)] public float embersBrightness = 0.16f;
+            [Tooltip("Цвет тлеющего угля — тускло-красный, тревожный.")]
+            public Color embersColor = new Color(0.9f, 0.1f, 0.04f);
+            [Tooltip("Частота тревожного пульса в тлении, Гц.")]
+            [Min(0)] public float embersPulseHz = 2.2f;
+            [Tooltip("Глубина пульса в тлении.")]
+            [Range(0, 1)] public float embersPulseDepth = 0.55f;
+            [Tooltip("Искр в секунду в тлении.")]
+            [Min(0)] public float embersSparksPerSecond = 1.5f;
+
+            [Header("Переходы")]
+            [Tooltip("Скорость смены цвета пламя ↔ уголь, 1/с.")]
+            [Min(0.1f)] public float colorBlendSpeed = 4f;
+            [Tooltip("Скорость изменения яркости, 1/с (вспышка при подкидывании).")]
+            [Min(0.1f)] public float brightnessSpeed = 5f;
         }
 
         [Serializable]
@@ -216,6 +254,16 @@ namespace LastRide.Core
             [Min(0)] public float finalWhiteFadeSeconds = 4f;
             [Tooltip("Время полёта подобранного предмета в робота, с.")]
             [Min(0)] public float pickupFlySeconds = 0.35f;
+            [Tooltip("Время открытия/закрытия заслонки печки (панель печки), с.")]
+            [Min(0.05f)] public float stoveFlapSeconds = 0.35f;
+            [Tooltip("HUD: ниже этой доли шкалы (0..1) она мигает красным.")]
+            [Range(0, 1)] public float hudCriticalFraction = 0.2f;
+            [Tooltip("HUD: частота мигания критической шкалы, Гц.")]
+            [Min(0.1f)] public float hudBlinkHz = 2.5f;
+            [Tooltip("HUD: обычная непрозрачность (0..1) — полупрозрачный, без рамок.")]
+            [Range(0, 1)] public float hudAlpha = 0.85f;
+            [Tooltip("HUD: скорость плавного движения шкал (доля в секунду).")]
+            [Min(0.1f)] public float hudBarSpeed = 2f;
         }
 
         [Serializable]
