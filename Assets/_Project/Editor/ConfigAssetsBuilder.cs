@@ -43,6 +43,8 @@ namespace LastRide.Editor
                 d.guaranteedPickupsPerSegment = 1;
             });
 
+            GetOrCreate<LastRide.ProcGen.PaletteAsset>(Root + "Resources/Palette.asset", p => p.colors = LastRide.ProcGen.PaletteAsset.Defaults());
+
             var config = GetOrCreate<GameConfig>(Root + "Resources/GameConfig.asset", _ => { });
             config.balance = balance;
             config.acts = acts;
