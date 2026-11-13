@@ -2,6 +2,35 @@
 
 ТЗ: [CLAUDE.md](CLAUDE.md). Работа идёт по подзадачам (этапы 0–14, подзадачи X.Y) — по одной, после отмашки пользователя. Подзадачи с ⚠️ — сначала план, потом код.
 
+## Как продолжить (для новой сессии / нового чата)
+
+**Состояние на 2026-11-14:** этапы 0–3 готовы и закоммичены (`d1d0961 Stage 3: van`), рабочая копия чистая. **Следующая подзадача — 4.1** (контроллер робота от 1-го лица). Подзадачи 4.1–4.4 без ⚠️ — план согласовывать не нужно, достаточно итогового отчёта.
+
+**Порядок работы (договорённость с пользователем):** одна подзадача за раз, только после его «да»; для ⚠️-подзадач сначала описать план и спросить про развилки; после каждой — обновить этот файл, в конце этапа — коммит; общение по-русски. Сам список подзадач — ниже.
+
+**С чего начать новую сессию:**
+1. Прочитать этот файл (особенно «Принятые решения» и «Известные баги / заметки»), `CLAUDE.md` — ТЗ.
+2. Проверить MCP: `mcpforunity://instances` и `read_console`; Unity открыт на проекте `The Last Ride`.
+3. После правки любого скрипта: `refresh_unity(force, compile)` → консоль без ошибок → только потом дальше.
+
+**Карта проекта (всё в `Assets/_Project/`):**
+- `Scripts/Core` — `GameManager` (состояния, режим игрока `InVan/OnFoot/OnFootWithLamp`, `Config/Balance/Difficulty`), `EventBus<T>` и события, `GameInput` (обёртка ввода; карты `Van/OnFoot/UI/Debug` включаются по контексту), `GameBalance`/`ActSettings`/`DifficultyProfile`, `Surfaces.At(point)` + `SurfaceZone` (лёд/глубокий снег), `Layers` (Vehicle/Player/Interactable, `GroundMask`).
+- `Scripts/Vehicle` — `VanController` (физика), `VanCamera` (Cinemachine).
+- `Scripts/ProcGen` — библиотека мешей и генераторы моделей (`Models/*`, якоря — `Anchors`).
+- `Scripts/Debug` — F1-оверлей (`DebugOverlay.RegisterLine`), `TestSceneBootstrap`, `VanTestDriver` (автозаезды).
+- `Editor/` — билдеры: **`The Last Ride/Generate All`** (палитра → материалы → меши → префабы → витрина), `Setup/Create Config Assets`, `Setup/Create Input Actions`, `Setup/Create Materials`, `Setup/Build Gameplay Prefabs`, `Test/Build Van Test Track`.
+- `Data/` — `Balance/GameBalance.asset` (весь баланс), `Acts/`, `Fuel/`, `Difficulty/`, `Resources/{GameConfig,Palette}.asset`, `LastRideInput.inputactions`, `InputSystemSettings.asset`.
+- `Prefabs/Van.prefab` — игровой вариант фургона; `Generated/` — меши и префабы моделей (перегенерируются).
+- Сцены: `Scenes/MainMenu`, `Scenes/Game` (пока почти пусты — наполнит билдер уровня, этап 7), `Scenes/Test/{Showcase,VanTestTrack}`.
+
+**Готовые точки подключения для этапа 4 (робот):**
+- Модель: `Characters/Robot` (части Torso/Head/HeadGlass/Key/Arm_L/R/Leg_L/R, якорь `Eye` на высоте ~1.32 м), руки 1-го лица — `Characters/FPArms`; материал `M_Robot` (снега нет). Размеры/шарниры — `RobotModel`.
+- Фургон: якоря `ExitPoint` (куда встаёт робот) и `DoorPoint` (зона «[E] Сесть») в префабе `Van`; `VanController.CanDrive`, `InputOverride`; камера `VanCamera` + `CinemachineBrain` с бленд-временем `presentation.cameraBlendSeconds` (0.6 с).
+- Ввод: карта `OnFoot` (`GameInput.Move/Look/InteractPressed/LampPressed/FuelSlotPressed`), в фургоне — `ExitVanPressed`; переключение — `GameManager.SetPlayerMode`.
+- Параметры ходьбы уже в `GameBalance.movement` (скорость lerp 1.4…3.0 по теплу, множитель глубокого снега 0.6, лёд — инерция, дальность взаимодействия 2.5 м); поверхности — `Surfaces.At(point)`.
+- Слои: `Player` для робота, `Interactable` для подбираемых/интерактивных (триггер-коллайдеры есть у топлива и банки Искры), `Layers.GroundMask` исключает их из лучей.
+- Для автотестов по образцу `VanTestDriver` добавлять сценарии в `Scripts/Debug`, а не писать классы в `execute_code` (см. память `mcp-pitfalls`).
+
 ## Статус
 
 | Этап | Статус |
@@ -212,3 +241,12 @@
 
 - В консоли Unity есть ошибка MCP for Unity «Failed to register with Claude Code» — на работу MCP не влияет, подключение рабочее.
 - После перезагрузки домена мост MCP иногда пару секунд недоступен («Port 6400 not released yet») — это нормально, достаточно повторить запрос.
+
+**Открытые заметки на будущее (собраны из этапов 0–3):**
+- 4.1 / 2.6: робот выглядит крупным (~1.7 м, глаза ~1.32 м) — при необходимости масштабировать префаб; решить на этапе 4.
+- 5.3: окно фургона, стекло головы робота и стекло лампы должны получить **свои экземпляры материала**, яркость/цвет которых зависят от запаса огня (сейчас общий `M_Glow`, окно белёсо-жёлтое).
+- 7.x: уклоны дороги ≤ 14°, один короткий участок 20° (только с разгона); внутри мастерской нужен тёплый свет от лампы на верстаке; Маяк должен быть виден издалека (`M_Beacon._FogAmount` 0.15), в акте 2 погода поднимает его до 1.
+- 9.x: SSAO в рендерере выключен (вернуться к вопросу); искорки снега вблизи густоваты; контраст белых верхних граней на снежной земле дадут тени, туман и цветокоррекция.
+- 13.3 (билд): решить, оставлять ли `InputSystemSettings` (`IgnoreFocus`, `AllDeviceInputAlwaysGoesToGameView`) для билда; тестовые сцены `Scenes/Test/*` в Build Settings не добавлены — так и оставить.
+- Баланс «на ощупь» (езда, камера) подгоняет пользователь вручную в `GameBalance.asset`; автотесты подтверждают только числа.
+- Git предупреждает «LF will be replaced by CRLF» — безвредно.
