@@ -35,14 +35,56 @@ MonoBehaviour:
     interactDistance: 2.5
   van:
     maxSpeed: 14
+    reverseMaxSpeed: 4
+    driveAcceleration: 3.5
+    reverseAcceleration: 2
+    brakeDeceleration: 6
+    handbrakeDeceleration: 4
+    coastDeceleration: 0.6
+    airDrag: 0.002
+    driveTraction: 0.3
+    brakeTraction: 0.6
+    lateralGrip: 0.9
+    gripResponse: 0.6
+    handbrakeRearGrip: 0.35
     iceGripMultiplier: 0.3
+    iceRearGripBias: 0.6
     deepSnowMaxSpeedMultiplier: 0.5
     deepSnowDrag: 4
+    steerAngleLowSpeed: 30
+    steerAngleHighSpeed: 10
+    steerSpeed: 80
+    steerReturnSpeed: 140
+    suspensionRest: 0.35
+    suspensionTravel: 0.35
+    springStiffness: 26000
+    springDamper: 2800
+    antiRoll: 9000
+    mass: 1200
+    centerOfMass: {x: 0, y: 0.6, z: 0.15}
+    uprightAfterSeconds: 3
     gustSideForce: 1.2
   gusts:
     interval: {x: 8, y: 20}
     duration: {x: 1.5, y: 3}
     warmthLossMultiplier: 2
+  vanCamera:
+    distance: 5
+    height: 4.3
+    pitchDown: 20
+    followSmoothTime: 0.25
+    yawSmoothTime: 0.35
+    fieldOfView: 60
+    orbitSensitivity: 0.12
+    orbitPitchRange: {x: -15, y: 35}
+    recenterDelay: 1.5
+    recenterSpeed: 90
+    collisionRadius: 0.3
+    rumbleAtMaxSpeed: 0.12
+    bumpTraumaScale: 4
+    maxShakeAngle: 2.5
+    traumaDecay: 1.8
+    shakeFrequency: 14
   presentation:
     cameraBlendSeconds: 0.6
     deathFadeSeconds: 1.5

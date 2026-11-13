@@ -14,6 +14,7 @@ namespace LastRide.Core
         public MovementSettings movement = new MovementSettings();
         public VanSettings van = new VanSettings();
         public GustSettings gusts = new GustSettings();
+        public VanCameraSettings vanCamera = new VanCameraSettings();
         public PresentationSettings presentation = new PresentationSettings();
         public SubtitleSettings subtitles = new SubtitleSettings();
 
@@ -70,16 +71,123 @@ namespace LastRide.Core
         [Serializable]
         public sealed class VanSettings
         {
+            [Header("Скорость и тяга")]
             [Tooltip("Максимальная скорость, м/с.")]
             [Min(0)] public float maxSpeed = 14f;
+            [Tooltip("Максимальная скорость задним ходом, м/с.")]
+            [Min(0)] public float reverseMaxSpeed = 4f;
+            [Tooltip("Ускорение на малой скорости, м/с² (падает к максимальной скорости).")]
+            [Min(0)] public float driveAcceleration = 3.5f;
+            [Tooltip("Ускорение задним ходом, м/с².")]
+            [Min(0)] public float reverseAcceleration = 2f;
+            [Tooltip("Торможение (S при движении вперёд), м/с².")]
+            [Min(0)] public float brakeDeceleration = 6f;
+            [Tooltip("Торможение ручником, м/с².")]
+            [Min(0)] public float handbrakeDeceleration = 4f;
+            [Tooltip("Замедление накатом (качение + двигатель), м/с².")]
+            [Min(0)] public float coastDeceleration = 0.6f;
+            [Tooltip("Сопротивление воздуха: a = k · v².")]
+            [Min(0)] public float airDrag = 0.002f;
+
+            [Header("Сцепление (коэффициенты трения шин о снег)")]
+            [Tooltip("Продольное сцепление при разгоне. Меньше tan 20° (0.36), но больше tan 14° (0.25): 20° — только с разгона. " +
+                     "0.30 даёт на 20° дефицит ~0.7 м/с² — с места/короткого разгона склон не взять, с 10+ м/с — взять.")]
+            [Range(0, 2)] public float driveTraction = 0.30f;
+            [Tooltip("Продольное сцепление при торможении.")]
+            [Range(0, 2)] public float brakeTraction = 0.6f;
+            [Tooltip("Боковое сцепление (держит в повороте).")]
+            [Range(0, 2)] public float lateralGrip = 0.9f;
+            [Tooltip("Насколько быстро колесо гасит боковое скольжение (0..1 за шаг физики).")]
+            [Range(0, 1)] public float gripResponse = 0.6f;
+            [Tooltip("Множитель бокового сцепления задних колёс на ручнике.")]
+            [Range(0, 1)] public float handbrakeRearGrip = 0.35f;
             [Tooltip("Множитель сцепления на льду.")]
             [Range(0, 1)] public float iceGripMultiplier = 0.3f;
+            [Tooltip("На льду задние колёса держат ещё слабее передних (× этот множитель) — корму уводит, фургон «заносит», а не просто плывёт прямо.")]
+            [Range(0, 1)] public float iceRearGripBias = 0.6f;
+
+            [Header("Глубокий снег")]
             [Tooltip("Множитель максимальной скорости в глубоком снегу.")]
             [Range(0, 1)] public float deepSnowMaxSpeedMultiplier = 0.5f;
             [Tooltip("Дополнительное торможение в глубоком снегу, м/с².")]
             [Min(0)] public float deepSnowDrag = 4f;
+
+            [Header("Руль")]
+            [Tooltip("Максимальный угол передних колёс на малой скорости, °.")]
+            [Range(0, 45)] public float steerAngleLowSpeed = 30f;
+            [Tooltip("Максимальный угол на максимальной скорости, °.")]
+            [Range(0, 45)] public float steerAngleHighSpeed = 10f;
+            [Tooltip("Скорость поворота руля к нажатию, °/с.")]
+            [Min(0)] public float steerSpeed = 80f;
+            [Tooltip("Скорость возврата руля в центр, °/с.")]
+            [Min(0)] public float steerReturnSpeed = 140f;
+
+            [Header("Подвеска")]
+            [Tooltip("Длина пружины в покое, м.")]
+            [Min(0.05f)] public float suspensionRest = 0.35f;
+            [Tooltip("Дополнительный ход колеса вниз от положения покоя, м. Больше — колёса дольше держатся за землю на кочках.")]
+            [Min(0)] public float suspensionTravel = 0.35f;
+            [Tooltip("Жёсткость пружины одного колеса, Н/м.")]
+            [Min(0)] public float springStiffness = 26000f;
+            [Tooltip("Демпфер одного колеса, Н·с/м.")]
+            [Min(0)] public float springDamper = 2800f;
+            [Tooltip("Стабилизатор поперечной устойчивости, Н/м разницы сжатия.")]
+            [Min(0)] public float antiRoll = 9000f;
+
+            [Header("Корпус")]
+            [Min(1)] public float mass = 1200f;
+            [Tooltip("Центр масс относительно корня фургона (низко — не валится в поворотах).")]
+            public Vector3 centerOfMass = new Vector3(0f, 0.6f, 0.15f);
+            [Tooltip("Если фургон перевёрнут/завис дольше — плавно ставится на колёса, с.")]
+            [Min(0.5f)] public float uprightAfterSeconds = 3f;
+
+            [Header("Ветер")]
             [Tooltip("Боковой импульс от порыва ветра на единицу силы ветра.")]
             [Min(0)] public float gustSideForce = 1.2f;
+        }
+
+        /// <summary>
+        /// Камера от 3-го лица за фургоном. Читается каждый кадр — можно подстраивать в инспекторе прямо в Play Mode.
+        /// </summary>
+        [Serializable]
+        public sealed class VanCameraSettings
+        {
+            [Tooltip("Расстояние позади фургона (по горизонтали), м.")]
+            [Min(0)] public float distance = 5f;
+            [Tooltip("Высота камеры над корнем фургона (над землёй под ним), м.")]
+            [Min(0)] public float height = 4.3f;
+            [Tooltip("Наклон камеры вниз от горизонта, градусы.")]
+            [Range(-10, 80)] public float pitchDown = 20f;
+            [Tooltip("Плавность следования: время догоняния, с (меньше — жёстче).")]
+            [Min(0)] public float followSmoothTime = 0.25f;
+            [Tooltip("Плавность поворота вслед за фургоном, с.")]
+            [Min(0)] public float yawSmoothTime = 0.35f;
+            [Tooltip("Поле зрения по вертикали, градусы.")]
+            [Range(20, 100)] public float fieldOfView = 60f;
+
+            [Header("Орбита мышью")]
+            [Tooltip("Чувствительность орбиты, градусов на пиксель движения мыши.")]
+            [Min(0)] public float orbitSensitivity = 0.12f;
+            [Tooltip("Насколько можно опустить/поднять камеру мышью относительно базового наклона (мин, макс), °.")]
+            public Vector2 orbitPitchRange = new Vector2(-15f, 35f);
+            [Tooltip("Через сколько секунд без мыши камера начинает возвращаться за спину фургона (при движении).")]
+            [Min(0)] public float recenterDelay = 1.5f;
+            [Tooltip("Скорость возврата за спину, °/с.")]
+            [Min(0)] public float recenterSpeed = 90f;
+            [Tooltip("Радиус камеры для отталкивания от препятствий (сугробы, стены, скалы), м.")]
+            [Min(0)] public float collisionRadius = 0.3f;
+
+            [Header("Тряска")]
+            [Tooltip("Лёгкая «дорожная» тряска на максимальной скорости, °.")]
+            [Min(0)] public float rumbleAtMaxSpeed = 0.12f;
+            [Tooltip("Сколько «травмы» (0..1) добавляет резкое сжатие подвески (на кочках).")]
+            [Min(0)] public float bumpTraumaScale = 4f;
+            [Tooltip("Максимальный угол тряски при травме 1, °.")]
+            [Min(0)] public float maxShakeAngle = 2.5f;
+            [Tooltip("Скорость затухания травмы, 1/с.")]
+            [Min(0)] public float traumaDecay = 1.8f;
+            [Tooltip("Частота тряски, Гц.")]
+            [Min(0)] public float shakeFrequency = 14f;
         }
 
         [Serializable]

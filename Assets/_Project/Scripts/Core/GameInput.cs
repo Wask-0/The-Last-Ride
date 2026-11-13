@@ -14,6 +14,7 @@ namespace LastRide.Core
 
         public const string Pause = "Pause";
         public const string Look = "Look";
+        public const string Orbit = "Orbit";
         public const string Drive = "Drive";
         public const string Handbrake = "Handbrake";
         public const string ExitVan = "ExitVan";
@@ -42,6 +43,7 @@ namespace LastRide.Core
 
         private static InputActionMap _global, _van, _foot, _ui, _debug;
         private static InputAction _pause;
+        private static InputAction _vanOrbit;
         private static InputAction _vanDrive, _vanLook, _handbrake, _exitVan, _stove, _vanFuel1, _vanFuel2, _vanFuel3;
         private static InputAction _move, _footLook, _interact, _lamp, _footFuel1, _footFuel2, _footFuel3;
         private static InputAction _dbgOverlay, _dbgCheckpoint, _dbgFuel, _dbgGod, _dbgTime;
@@ -67,6 +69,7 @@ namespace LastRide.Core
 
             _vanDrive = _van.FindAction(InputNames.Drive, true);
             _vanLook = _van.FindAction(InputNames.Look, true);
+            _vanOrbit = _van.FindAction(InputNames.Orbit, true);
             _handbrake = _van.FindAction(InputNames.Handbrake, true);
             _exitVan = _van.FindAction(InputNames.ExitVan, true);
             _stove = _van.FindAction(InputNames.Stove, true);
@@ -137,6 +140,9 @@ namespace LastRide.Core
         }
 
         // ---- Фургон ----
+        /// <summary>Зажата левая кнопка мыши — камера за фургоном вращается вслед за мышью.</summary>
+        public static bool OrbitHeld => _vanOrbit != null && _vanOrbit.enabled && _vanOrbit.IsPressed();
+
         /// <summary>x — руль (A/D), y — газ/тормоз-назад (W/S).</summary>
         public static Vector2 Drive => Read(_vanDrive);
         public static bool Handbrake => _handbrake != null && _handbrake.enabled && _handbrake.IsPressed();

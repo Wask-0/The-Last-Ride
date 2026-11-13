@@ -32,6 +32,7 @@ namespace LastRide.Editor
             var van = asset.AddActionMap(InputNames.MapVan);
             Wasd(van.AddAction(InputNames.Drive, InputActionType.Value, expectedControlLayout: "Vector2"));
             Look(van);
+            Button(van, InputNames.Orbit, "<Mouse>/leftButton"); // камера крутится только при зажатой ЛКМ
             Button(van, InputNames.Handbrake, "<Keyboard>/space");
             Button(van, InputNames.ExitVan, "<Keyboard>/e");
             Button(van, InputNames.Stove, "<Keyboard>/tab");
