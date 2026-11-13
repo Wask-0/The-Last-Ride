@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07492d5d9c00c1d4182ff387a70e9175, type: 3}
+  m_Name: GameConfig
+  m_EditorClassIdentifier: LastRide::LastRide.Core.GameConfig
+  balance: {fileID: 11400000, guid: 554659ba185a4d740890c175e5120cf7, type: 2}
+  acts:
+  - {fileID: 11400000, guid: 3773512638222cc458394dca19b824f1, type: 2}
+  - {fileID: 11400000, guid: 1d77a114983b6674fb5eaba8f5434641, type: 2}
+  - {fileID: 11400000, guid: bc86ef8619623aa4b836085c121b4d15, type: 2}
+  fuelTypes:
+  - {fileID: 11400000, guid: dbea2ead130e58e4e8edaa2fcd4fec15, type: 2}
+  - {fileID: 11400000, guid: 35df1147f8013fe43828f95961e766bb, type: 2}
+  - {fileID: 11400000, guid: 8a9ecfbf52e6fdd46af1859d8a008886, type: 2}
+  difficulties:
+  - {fileID: 11400000, guid: 46e57429ee5a5804c8a8bdbf91c4be3a, type: 2}
+  defaultDifficulty: {fileID: 11400000, guid: 46e57429ee5a5804c8a8bdbf91c4be3a, type: 2}
+  audioLogs: []

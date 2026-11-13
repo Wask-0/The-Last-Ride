@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdae1a9a578feee4a9aa1b6dadb6a555, type: 3}
+  m_Name: GameBalance
+  m_EditorClassIdentifier: LastRide::LastRide.Core.GameBalance
+  fire:
+    stoveMaxBurnSeconds: 240
+    lampMaxBurnSeconds: 240
+    embersSeconds: 10
+    startBurnSeconds: 120
+    restoreMinBurnSeconds: 90
+  warmth:
+    max: 100
+    vanRecoverSeconds: 8
+    freezeToStopSeconds: 3
+    criticalFraction: 0.2
+    jamThreshold: 30
+    jamDuration: 0.2
+    jamInterval: {x: 4, y: 1.2}
+  movement:
+    walkSpeedCold: 1.4
+    walkSpeedWarm: 3
+    deepSnowSpeedMultiplier: 0.6
+    iceInertiaSeconds: 0.6
+    mouseSensitivity: 0.12
+    interactDistance: 2.5
+  van:
+    maxSpeed: 14
+    iceGripMultiplier: 0.3
+    deepSnowMaxSpeedMultiplier: 0.5
+    deepSnowDrag: 4
+    gustSideForce: 1.2
+  gusts:
+    interval: {x: 8, y: 20}
+    duration: {x: 1.5, y: 3}
+    warmthLossMultiplier: 2
+  presentation:
+    cameraBlendSeconds: 0.6
+    deathFadeSeconds: 1.5
+    finalWhiteFadeSeconds: 4
+    pickupFlySeconds: 0.35
+  subtitles:
+    secondsPerChar: 0.07
+    minLineSeconds: 2
+    duckingDb: -9

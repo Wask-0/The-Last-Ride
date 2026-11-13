@@ -7,7 +7,7 @@
 | Этап | Статус |
 |---|---|
 | 0. Подготовка | ✅ готово |
-| 1. Ядро | — |
+| 1. Ядро | ✅ готово |
 | 2. Процедурные ассеты | — |
 | 3. Фургон | — |
 | 4. Робот | — |
@@ -32,11 +32,11 @@
 - [x] 0.5 Сцены `MainMenu`, `Game`, Build Settings, проверка компиляции
 
 **1. Ядро**
-- [ ] 1.1 EventBus и базовые события
-- [ ] 1.2 GameManager (машина состояний) и режимы игрока
-- [ ] 1.3 ScriptableObject-классы и ассеты со стартовыми значениями
-- [ ] 1.4 Input Actions (Van / OnFoot / UI) и обёртка ввода
-- [ ] 1.5 Отладка: оверлей F1, ускорение F5
+- [x] 1.1 EventBus и базовые события
+- [x] 1.2 GameManager (машина состояний) и режимы игрока
+- [x] 1.3 ScriptableObject-классы и ассеты со стартовыми значениями
+- [x] 1.4 Input Actions (Van / OnFoot / UI) и обёртка ввода
+- [x] 1.5 Отладка: оверлей F1, ускорение F5
 
 **2. Процедурные ассеты**
 - [ ] 2.1 ⚠️ Библиотека мешей: flat shading, вершинные цвета, палитра, примитивы, шум, сохранение в `Generated/`
@@ -138,7 +138,22 @@
 - 2026-11-13: структура `Assets/_Project/` по ТЗ 1.3. Две сборки: `LastRide` (все рантайм-скрипты в `Scripts/`, пространства имён `LastRide.<Папка>`) и `LastRide.Editor` (только Editor, папка `Editor/`). Делить рантайм на сборки по системам не стали — системы связаны через EventBus, а отдельные asmdef дали бы лишние циклические зависимости. `InternalsVisibleTo("LastRide.Editor")` в `Scripts/AssemblyInfo.cs`.
 - 2026-11-13: папка `Scripts/Debug` использует пространство имён **`LastRide.DebugTools`**, а не `LastRide.Debug`: иначе внутри `LastRide.*` вызов `Debug.Log` разрешался бы в это пространство имён, а не в `UnityEngine.Debug`.
 - 2026-11-13: сцены `Assets/_Project/Scenes/MainMenu.unity` (build index 0) и `Game.unity` (index 1). В обеих — камера (post-processing вкл, far 1500), тёплый Directional Light, Trilight-амбиент, туман Exp2 (плотность 0.004) — временная база, итоговые значения придут из `ActSettings` (этап 9). Содержимое `Game` будет собирать билдер уровня (этап 7).
-- 2026-11-13: удалены остатки шаблона: `Assets/Scenes/SampleScene`, `SampleSceneProfile`, `TutorialInfo`, `Readme.asset`. `InputSystem_Actions.inputactions` пока оставлен — заменим своими Input Actions в 1.4.
+- 2026-11-13: удалены остатки шаблона: `Assets/Scenes/SampleScene`, `SampleSceneProfile`, `TutorialInfo`, `Readme.asset`. `InputSystem_Actions.inputactions` заменён своими Input Actions в 1.4.
+- 2026-11-13: EventBus — статический типизированный `EventBus<T>` (T : struct, IGameEvent), файлы `Scripts/Core/EventBus.cs`, `GameEvents.cs`, `GameEnums.cs`. Подписка/отписка во время рассылки безопасны, исключение в обработчике логируется и не ломает остальных, дубли подписки игнорируются. Все шины очищаются при старте Play Mode (`SubsystemRegistration`) — работает и без перезагрузки домена.
+- 2026-11-13: правило: по шине идут только **переходы** (смена акта, фазы погоды, начало тления, смерть…). Непрерывные значения (запас огня, тепло) системы читают напрямую у владельца. События, которым нужны типы систем (`FuelType`, `AudioLogData`), добавляются вместе с этими системами.
+- 2026-11-13: `GameManager` (`Scripts/Core/GameManager.cs`) создаётся сам до загрузки первой сцены (`BeforeSceneLoad`) и живёт между сценами (DontDestroyOnLoad) — в сценах его размещать не нужно. Стартовое состояние: `MainMenu`, если активна сцена MainMenu, иначе сразу `Playing` (удобно запускать Play Mode со сцены Game). Стартовый режим игрока — `OnFoot` (пролог пешком).
+- 2026-11-13: таблица разрешённых переходов: MainMenu→Playing; Playing→Paused/Dying/Restoring/Ending/MainMenu; Paused→Playing/Restoring/MainMenu; Dying→Restoring; Restoring→Playing; Ending→Credits; Credits→MainMenu. Запрещённый переход отклоняется с предупреждением. Playing→Restoring нужен для отладочного F2.
+- 2026-11-13: побочные эффекты состояний в GameManager: на паузе `Time.timeScale = 0`, иначе = `DebugTimeMultiplier` (для F5); курсор заблокирован только в `Playing`. Текущий акт хранит не GameManager, а контроллер актов (8.3).
+- 2026-11-13: конфиги (ScriptableObject): `GameBalance` (секции fire / warmth / movement / van / gusts / presentation / subtitles), `ActSettings` (погода `calm` + опционально `storm`-цикл и `summit`-затухание, порывы, `freezeSecondsLampOut`, свет и цвет), `DifficultyProfile` (`optionalPickupMultiplier` + `guaranteedPickupsPerSegment`, метод `ResolvePickupCount`), `FuelType`, `AudioLogData` (строки субтитров, авто-тайминг, масштабирование под длину клипа). Корневой `GameConfig` ссылается на всё и грузится из `Data/Resources/GameConfig.asset`; доступ — `GameManager.Instance.Config / Balance / Difficulty`.
+- 2026-11-13: время замерзания снаружи хранится в `WeatherPreset.freezeSeconds` (акт 1 — 90, акт 2 затишье/шторм — 40/12, акт 3 с горящей лампой — 120), а для погасшей лампы — `ActSettings.freezeSecondsLampOut` (20). Ускорение от порыва (×2) — общее, `GameBalance.gusts.warmthLossMultiplier`.
+- 2026-11-13: добавлен параметр, которого не было в ТЗ: `fire.startBurnSeconds = 120` — запас печки в момент, когда Искру ставят в печку (пролог). Подкрутим на этапе 13.
+- 2026-11-13: ассеты создаёт меню **The Last Ride/Setup/Create Config Assets** (`Editor/ConfigAssetsBuilder.cs`). Существующие ассеты не перезаписываются — только связываются в GameConfig, поэтому ручной тюнинг в инспекторе безопасен. Ассеты: `Data/Balance/GameBalance`, `Data/Acts/Act1–3`, `Data/Fuel/Kindling|Planks|Briquette`, `Data/Difficulty/Easy`. Ассеты аудиозаписей создадим в 8.1.
+- 2026-11-13: ввод — `Data/LastRideInput.inputactions`, назначен **project-wide** (`InputSystem.actions`). Собирается меню **The Last Ride/Setup/Create Input Actions** (`Editor/InputActionsBuilder.cs`) и полностью перезаписывается при пересборке — правки вносим в билдер, а не в ассет. Шаблонный `Assets/InputSystem_Actions.inputactions` удалён.
+- 2026-11-13: карты: `Global` (Esc), `Van` (WASD/стрелки, мышь, Space, E, Tab, 1–3), `OnFoot` (WASD/стрелки, мышь, E, R, 1–3), `UI` (для InputSystemUIInputModule), `Debug` (F1–F5). Схема управления одна — KeyboardMouse.
+- 2026-11-13: `GameInput` (`Scripts/Core/GameInput.cs`) — статическая обёртка; карты включает GameManager по контексту: Playing → Global + Van или OnFoot (+ Debug в Editor/Development); Paused → Global + UI; MainMenu/Credits → UI; Dying/Restoring/Ending → всё выключено. Когда карта выключена, значения = 0/false — системам не нужно самим проверять паузу.
+- 2026-11-13: на паузе Esc есть и в `Global/Pause`, и в `UI/Cancel` — меню паузы (11.4) должно реагировать только на один из них. Модулю UI (`InputSystemUIInputModule`) при создании меню назначить карту `UI` из этого ассета.
+- 2026-11-13: отладка — `Scripts/Debug/DebugOverlay.cs` (класс `LastRide.DebugTools.DebugOverlay`; класс не называем `DebugTools`, чтобы не совпадал с пространством имён). Создаётся сам после загрузки сцены, только при `Debug.isDebugBuild`. F1 — оверлей на IMGUI (FPS, состояние, режим, множитель времени, сложность + строки систем), F5 — переключение времени ×1 ↔ ×4 через `GameManager.DebugTimeMultiplier`. Системы добавляют строки в оверлей через `DebugOverlay.RegisterLine(label, () => value)` — акт, погода, огонь, тепло, позиция на сплайне появятся по мере готовности систем. F2–F4 — в 11.6.
+- 2026-11-13: создан `Data/InputSystemSettings.asset` (назначен в настройках Input System): `Background Behavior = Ignore Focus`, `Play Mode Input Behavior = All Device Input Always Goes To Game View`. Без этого эмулированный через MCP ввод доходит до игры только в первые кадры Play Mode (пока у Game view фокус) — это ломало бы автоматические проверки фургона и робота. Побочный эффект: в Play Mode клавиатура уходит в игру, даже если фокус в другом окне редактора. Перед билдом (13.3) решить, оставлять ли `Ignore Focus` для билда.
 
 ## Известные баги / заметки
 

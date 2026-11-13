@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a10407fd25765a245a22978e9401aeab, type: 3}
+  m_Name: Easy
+  m_EditorClassIdentifier: LastRide::LastRide.Core.DifficultyProfile
+  id: easy
+  displayName: "\u041B\u0451\u0433\u043A\u0430\u044F"
+  description: "\u0410\u043A\u0446\u0435\u043D\u0442 \u043D\u0430 \u0438\u0441\u0442\u043E\u0440\u0438\u0438.
+    \u0422\u043E\u043F\u043B\u0438\u0432\u0430 \u0445\u0432\u0430\u0442\u0430\u0435\u0442."
+  optionalPickupMultiplier: 1
+  guaranteedPickupsPerSegment: 1
