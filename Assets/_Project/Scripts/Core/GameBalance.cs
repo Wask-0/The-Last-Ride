@@ -66,6 +66,10 @@ namespace LastRide.Core
             [Min(0)] public float mouseSensitivity = 0.12f;
             [Tooltip("Дальность взаимодействия (луч из прицела), м.")]
             [Min(0)] public float interactDistance = 2.5f;
+            [Tooltip("Максимальная скорость фургона, при которой можно выйти (E), м/с.")]
+            [Min(0)] public float maxExitVanSpeed = 1.5f;
+            [Tooltip("Пауза после выхода/посадки, прежде чем E сработает снова, с.")]
+            [Min(0)] public float boardingCooldown = 0.5f;
         }
 
         [Serializable]

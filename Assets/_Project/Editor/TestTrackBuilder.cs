@@ -126,6 +126,26 @@ namespace LastRide.Editor
             bootstrap.AddComponent<LastRide.DebugTools.TestSceneBootstrap>().startMode = LastRide.Core.PlayerMode.InVan;
             bootstrap.AddComponent<LastRide.DebugTools.VanTestDriver>().van = van.GetComponent<LastRide.Vehicle.VanController>();
 
+            // Робот рядом с фургоном (активен, только когда режим игрока — пешком).
+            var robot = (GameObject)PrefabUtility.InstantiatePrefab(GameplayPrefabsBuilder.Robot);
+            robot.name = "Robot";
+            robot.transform.SetPositionAndRotation(spawn.transform.position + new Vector3(4f, 0.1f, 0f), Quaternion.identity);
+            bootstrap.AddComponent<LastRide.DebugTools.RobotTestDriver>().robot = robot.GetComponent<LastRide.Player.RobotController>();
+            var boarding = bootstrap.AddComponent<LastRide.Player.VanBoarding>();
+            boarding.van = van.GetComponent<LastRide.Vehicle.VanController>();
+            boarding.robot = robot.GetComponent<LastRide.Player.RobotController>();
+            bootstrap.AddComponent<LastRide.UI.InteractionPromptView>();
+
+            // Предметы для проверки луча и подсказок «[E] …» (настоящий подбор — в 5.1).
+            var fuelSpots = new[] { ("Fuel/Fuel_Planks", "Подобрать доски", new Vector3(-4f, 0.15f, -76f)),
+                                    ("Fuel/Fuel_Kindling", "Подобрать щепки", new Vector3(-6f, 0.15f, -79f)),
+                                    ("Fuel/Fuel_Briquette", "Подобрать брикет", new Vector3(-3f, 0.15f, -83f)) };
+            foreach (var (path, text, pos) in fuelSpots)
+            {
+                var item = PlacePrefab(root, path, pos, 20f);
+                item.AddComponent<LastRide.DebugTools.DebugInteractable>().prompt = text;
+            }
+
             // ---- Камера, свет (тёплый закат акта 1), туман ----
             var cam = Camera.main;
             Ensure<UniversalAdditionalCameraData>(cam.gameObject).renderPostProcessing = true;
