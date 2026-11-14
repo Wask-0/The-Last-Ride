@@ -70,6 +70,13 @@ namespace LastRide.Core
     /// <summary>Заводной механизм «заел» (тепло ниже порога): на Duration секунд робот встал. Для скрипа (10.3).</summary>
     public struct MechanismJammed : IGameEvent { public float Duration; }
 
+    /// <summary>Шаг робота пешком (для звука шагов, 10.3). Strength 0…1 — по скорости.</summary>
+    public struct RobotStep : IGameEvent
+    {
+        public SurfaceType Surface;
+        public float Strength;
+    }
+
     /// <summary>Тепло достигло 0 — робот начинает застывать.</summary>
     public struct PlayerFreezing : IGameEvent { }
 

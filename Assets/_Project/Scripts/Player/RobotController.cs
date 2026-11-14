@@ -302,7 +302,11 @@ namespace LastRide.Player
             float stepsPerSecond = Mathf.Lerp(bobStepsPerSecondCold, bobStepsPerSecondWarm, warm01);
             float moving = _cc.isGrounded ? Mathf.Clamp01(Speed / Mathf.Max(0.1f, Move.walkSpeedCold)) : 0f;
             _bobAmount = Mathf.MoveTowards(_bobAmount, moving, 6f * dt);
+            float prevPhase = _bobPhase;
             _bobPhase += stepsPerSecond * Mathf.PI * 2f * dt * (_bobAmount > 0.01f ? 1f : 0f);
+            // Шаг = каждые π фазы (две ноги за период); звук шагов (10.3) слушает событие.
+            if (_bobAmount > 0.3f && Mathf.FloorToInt(_bobPhase / Mathf.PI) != Mathf.FloorToInt(prevPhase / Mathf.PI))
+                EventBus<RobotStep>.Publish(new RobotStep { Surface = Surface, Strength = Mathf.Clamp01(Speed / Mathf.Max(0.1f, Move.walkSpeedWarm)) });
 
             float vert = Mathf.Sin(_bobPhase * 2f) * bobVertical;
             float side = Mathf.Cos(_bobPhase) * bobSide;

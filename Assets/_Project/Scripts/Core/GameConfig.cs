@@ -21,6 +21,8 @@ namespace LastRide.Core
         public DifficultyProfile[] difficulties = new DifficultyProfile[0];
         public DifficultyProfile defaultDifficulty;
         public AudioLogData[] audioLogs = new AudioLogData[0];
+        [Tooltip("Микшер игры (Master/Music/SFX/Ambience/Voice). Создаётся «The Last Ride/Setup/Create Audio Mixer».")]
+        public UnityEngine.Audio.AudioMixer mixer;
 
         private static GameConfig _cached;
 

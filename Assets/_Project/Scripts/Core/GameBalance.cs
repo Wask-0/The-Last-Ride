@@ -26,6 +26,117 @@ namespace LastRide.Core
         public AtmosphereSettings atmosphere = new AtmosphereSettings();
         public PostFxSettings postFx = new PostFxSettings();
         public FrostSettings frost = new FrostSettings();
+        public AudioSettingsData audio = new AudioSettingsData();
+
+        /// <summary>Аудиоядро (этап 10.1): громкости шин, лимитер, пул SFX, ducking.</summary>
+        [Serializable]
+        public sealed class AudioSettingsData
+        {
+            [Header("Громкость шин по умолчанию (дБ)")]
+            public float masterDb = 0f;
+            public float musicDb = -4f;
+            public float sfxDb = 0f;
+            public float ambienceDb = -3f;
+            public float voiceDb = 0f;
+            [Header("Лимитер")]
+            [Tooltip("Запас по пику на AudioListener: выход никогда не выше этого уровня (линейно).")]
+            [Range(0.5f, 1f)] public float limiterCeiling = 0.95f;
+            [Tooltip("Порог, с которого лимитер начинает плавно прижимать сигнал (линейно).")]
+            [Range(0.3f, 0.95f)] public float limiterThreshold = 0.7f;
+            [Tooltip("Порог мягкого ограничения внутри каждого непрерывного слоя (линейно).")]
+            [Range(0.3f, 0.95f)] public float layerThreshold = 0.8f;
+            [Header("SFX")]
+            [Tooltip("Размер пула AudioSource для коротких звуков.")]
+            [Range(4, 32)] public int sfxPoolSize = 12;
+            [Header("Слои (10.2): общая громкость слоя 0…1")]
+            [Range(0, 1)] public float windGain = 0.55f;
+            [Range(0, 1)] public float fireGain = 0.5f;
+            [Range(0, 1)] public float mechanismGain = 0.4f;
+            [Range(0, 1)] public float engineGain = 0.5f;
+            [Header("Ветер")]
+            [Tooltip("Ветер (м/с), при котором слой звучит на полную. Обычно = Gusts.referenceWind.")]
+            [Min(1)] public float windFullAt = 12f;
+            [Tooltip("Минимальная громкость ветра при полном штиле (доля), чтобы тишина не была мёртвой.")]
+            [Range(0, 0.5f)] public float windFloor = 0.12f;
+            [Tooltip("Во сколько раз ветер приглушён внутри фургона (громкость).")]
+            [Range(0, 1)] public float windInVanGain = 0.6f;
+            [Tooltip("Частота среза ветра внутри фургона, Гц.")]
+            [Min(100)] public float windInVanCutoff = 450f;
+            [Header("Огонь")]
+            [Tooltip("Трески в секунду при полной Искре.")]
+            [Min(0)] public float crackleRateMax = 14f;
+            [Tooltip("Расстояние (м) от фургона, на котором печка снаружи слышна на уровне фона.")]
+            [Min(1)] public float stoveHearRange = 22f;
+            [Tooltip("Громкость лампы в руке (доля).")]
+            [Range(0, 1)] public float lampHandGain = 0.55f;
+            [Header("Механизм робота")]
+            [Tooltip("Громкость тиканья внутри фургона (доля).")]
+            [Range(0, 1)] public float mechanismInVanGain = 0.45f;
+            [Tooltip("Громкость скрипа при холоде (доля).")]
+            [Range(0, 1)] public float creakGain = 0.5f;
+            [Header("Двигатель")]
+            [Tooltip("Частота основного тона на холостых, Гц.")]
+            [Min(10)] public float engineIdleHz = 34f;
+            [Tooltip("Частота основного тона на максимальной скорости, Гц.")]
+            [Min(10)] public float engineMaxHz = 88f;
+            [Tooltip("Скорость роста оборотов, Гц/с.")]
+            [Min(1)] public float engineRevUp = 45f;
+            [Tooltip("Скорость падения оборотов (при заглохшем) Гц/с.")]
+            [Min(1)] public float engineRevDown = 14f;
+            [Tooltip("Громкость шума колёс по снегу (доля).")]
+            [Range(0, 1)] public float wheelNoiseGain = 0.5f;
+            [Header("SFX (10.3): громкости по группам 0…1")]
+            [Range(0, 1)] public float footstepGain = 0.5f;
+            [Range(0, 1)] public float interactGain = 0.7f;   // подбор, заслонка, подкидывание, огонь-события
+            [Range(0, 1)] public float vanGain = 0.9f;        // дверь, лязг поломки, удары порыва
+            [Range(0, 1)] public float radioGain = 0.6f;      // щелчок плёнки, всплески помех
+            [Range(0, 1)] public float radioStaticGain = 0.12f; // непрерывные помехи на записи без голоса
+            [Range(0, 1)] public float voiceClipGain = 1f;    // записанный голос создателя
+            [Tooltip("Разброс высоты тона у повторяющихся звуков (±).")]
+            [Range(0, 0.3f)] public float pitchJitter = 0.06f;
+            [Tooltip("Интервал сигнала тления, с: при полном запасе тления … перед угасанием.")]
+            public Vector2 embersAlarmInterval = new Vector2(1.4f, 0.55f);
+            [Header("Музыка (10.4)")]
+            [Range(0, 1)] public float musicGain = 0.55f;
+            [Tooltip("Скорость смены настроения (сглаживание), 1/с.")]
+            [Min(0.01f)] public float musicMoodSpeed = 0.12f;
+            [Tooltip("Сколько секунд звучит аккорд (Am–F–C–G): акт 1 / акт 2 / акт 3.")]
+            public Vector3 chordSeconds = new Vector3(9f, 14f, 16f);
+            [Header("Акт 1: тёплый эмбиент")]
+            [Range(0, 1)] public float act1Pad = 0.55f;
+            [Range(0, 1)] public float act1Melody = 0.6f;
+            [Header("Акт 2: разреженные диссонансы")]
+            [Range(0, 1)] public float act2Pad = 0.16f;
+            [Range(0, 1)] public float act2DissonanceCalm = 0.3f;
+            [Range(0, 1)] public float act2DissonanceStorm = 0.9f;
+            [Range(0, 1)] public float act2Drone = 0.25f;
+            [Header("Акт 3: почти тишина → подъём")]
+            [Range(0, 1)] public float act3Drone = 0.3f;
+            [Range(0, 1)] public float act3PadAtSummit = 0.28f;
+            [Range(0, 1)] public float act3MelodyAtSummit = 0.5f;
+            [Header("Кода (Искра в Маяке и титры)")]
+            [Range(0, 1)] public float codaPad = 0.6f;
+            [Range(0, 1)] public float codaMelody = 0.8f;
+            [Header("Критическое состояние (тление, холод)")]
+            [Tooltip("Насколько критическое состояние сжимает музыку (0 — не влияет).")]
+            [Range(0, 1)] public float tensionSqueeze = 0.75f;
+            [Range(0, 1)] public float tensionDrone = 0.35f;
+            [Header("Гул Маяка (10.5)")]
+            [Range(0, 1)] public float beaconGain = 0.5f;
+            [Tooltip("С какого прогресса подъёма в акте 3 появляется гул (0…1).")]
+            [Range(0, 1)] public float beaconStartProgress = 0.45f;
+            [Tooltip("Громкость гула у самой Вершины до финала (доля).")]
+            [Range(0, 1)] public float beaconSummitLevel = 0.55f;
+            [Tooltip("За сколько секунд гул нарастает до полного после доставки Искры.")]
+            [Min(1)] public float beaconFinaleRise = 20f;
+            [Header("Ducking (10.5)")]
+            [Tooltip("На сколько дБ приглушается музыка во время аудиозаписи.")]
+            public float duckDb = -9f;
+            [Tooltip("На сколько дБ приглушаются ветер/огонь/двигатель (Ambience) во время аудиозаписи.")]
+            public float duckAmbienceDb = -6f;
+            [Min(0.01f)] public float duckAttack = 0.25f;
+            [Min(0.01f)] public float duckRelease = 0.8f;
+        }
 
         /// <summary>Иней на экране (этап 9.4).</summary>
         [Serializable]
