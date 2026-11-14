@@ -69,6 +69,7 @@ namespace LastRide.Audio
                 case GameState.Restoring:
                 case GameState.Ending: targetMaster = 1f; break;
                 case GameState.Paused: targetMaster = 0.25f; break;
+                case GameState.MainMenu: targetMaster = c.menuAmbienceLevel; break;
                 default: targetMaster = 0f; break;
             }
             float dt = Time.unscaledDeltaTime;

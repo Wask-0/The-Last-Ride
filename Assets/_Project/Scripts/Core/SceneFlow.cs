@@ -36,10 +36,10 @@ namespace LastRide.Core
         }
 
         /// <summary>Новая игра: старое сохранение удаляется (подтверждение — в меню).</summary>
-        public bool StartNewGame()
+        public bool StartNewGame(DifficultyProfile difficulty = null)
         {
             if (Busy) return false;
-            StartCoroutine(LoadGame(null));
+            StartCoroutine(LoadGame(null, difficulty));
             return true;
         }
 
@@ -47,7 +47,7 @@ namespace LastRide.Core
         public bool ContinueGame()
         {
             if (Busy || !SaveSystem.TryLoad(out var data) || data.completed) return false;
-            StartCoroutine(LoadGame(data));
+            StartCoroutine(LoadGame(data, null));
             return true;
         }
 
@@ -59,7 +59,7 @@ namespace LastRide.Core
             return true;
         }
 
-        private IEnumerator LoadGame(SaveData data)
+        private IEnumerator LoadGame(SaveData data, DifficultyProfile newGameDifficulty)
         {
             Busy = true;
             var gm = GameManager.Instance;
@@ -68,6 +68,7 @@ namespace LastRide.Core
 
             if (data == null) SaveSystem.Delete();
             gm.ResetForNewGame();
+            if (data == null && newGameDifficulty != null) gm.SetDifficulty(newGameDifficulty);
             if (data != null)
             {
                 var diff = gm.Config != null ? gm.Config.GetDifficulty(data.difficultyId) : null;

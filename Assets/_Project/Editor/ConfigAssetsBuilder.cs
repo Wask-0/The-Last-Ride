@@ -43,13 +43,23 @@ namespace LastRide.Editor
                 d.guaranteedPickupsPerSegment = 1;
             });
 
+            // «Напряжённая» (этап 14): меньше необязательного топлива на пути, на каждом отрезке остаётся минимум.
+            var hard = GetOrCreate<DifficultyProfile>(Root + "Difficulty/Hard.asset", d =>
+            {
+                d.id = "hard";
+                d.displayName = "Напряжённая";
+                d.description = "Ресурсов впритык: меньше необязательного топлива.";
+                d.optionalPickupMultiplier = 0.4f; // ниже ~0.4 почти ничего не меняется: на каждом отрезке остаётся минимум 1 предмет
+                d.guaranteedPickupsPerSegment = 1;
+            });
+
             GetOrCreate<LastRide.ProcGen.PaletteAsset>(Root + "Resources/Palette.asset", p => p.colors = LastRide.ProcGen.PaletteAsset.Defaults());
 
             var config = GetOrCreate<GameConfig>(Root + "Resources/GameConfig.asset", _ => { });
             config.balance = balance;
             config.acts = acts;
             config.fuelTypes = fuels;
-            if (config.difficulties == null || config.difficulties.Length == 0) config.difficulties = new[] { easy };
+            config.difficulties = new[] { easy, hard };
             if (config.defaultDifficulty == null) config.defaultDifficulty = easy;
             if (config.audioLogs == null) config.audioLogs = new LastRide.Narrative.AudioLogData[0];
             EditorUtility.SetDirty(config);

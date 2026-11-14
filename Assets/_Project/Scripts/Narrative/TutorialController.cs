@@ -167,6 +167,8 @@ namespace LastRide.Narrative
                 var lh = _gm.Balance != null ? _gm.Balance.lampHand : new GameBalance.LampHandSettings();
                 if (_gm.PlayerMode == PlayerMode.OnFootWithLamp) Hint("lamp_r", lh.rHintText, Cfg.hintSeconds + 2f);
             }
+            if (_gm.PlayerMode == PlayerMode.OnFootWithLamp && _gm.Warmth.Fraction < 0.5f && _gm.Spark.State == SparkState.Burning)
+                Hint("lamp_warm", "Остановитесь — горящая лампа согреет вас", Cfg.hintSeconds + 2f);
             if (_drivingAt >= 0f && _clock >= _drivingAt)
             {
                 _drivingAt = -1f;

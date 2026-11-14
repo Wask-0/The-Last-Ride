@@ -23,6 +23,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 8a9ecfbf52e6fdd46af1859d8a008886, type: 2}
   difficulties:
   - {fileID: 11400000, guid: 46e57429ee5a5804c8a8bdbf91c4be3a, type: 2}
+  - {fileID: 11400000, guid: 5008e3f6fd9836f41bd2d07de891df22, type: 2}
   defaultDifficulty: {fileID: 11400000, guid: 46e57429ee5a5804c8a8bdbf91c4be3a, type: 2}
   audioLogs:
   - {fileID: 11400000, guid: 80a49f191d6489942ac20e4e4ca1345b, type: 2}

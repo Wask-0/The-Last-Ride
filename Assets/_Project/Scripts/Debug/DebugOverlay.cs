@@ -104,7 +104,7 @@ namespace LastRide.DebugTools
         /// F2: к ближайшему впереди чекпоинту (или зоне поломки фургона — без неё акт 3 не начать). По дороге срабатывают
         /// пропущенные начала актов, чтобы погода и акт соответствовали месту; затем срабатывает сама зона (сохранение чекпоинта).
         /// </summary>
-        private static void TeleportToNextCheckpoint(GameManager gm)
+        public static void TeleportToNextCheckpoint(GameManager gm)
         {
             var path = RoadPath.Load();
             if (path == null) return;

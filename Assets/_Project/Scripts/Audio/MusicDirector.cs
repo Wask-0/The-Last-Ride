@@ -78,6 +78,7 @@ namespace LastRide.Audio
                 case GameState.Ending:
                 case GameState.Credits: tm = 1f; break;
                 case GameState.Paused: tm = 0.5f; break;
+                case GameState.MainMenu: tm = c.menuMusicLevel; break;
                 default: tm = 0f; break;
             }
             _master = Mathf.MoveTowards(_master, tm, dt * 1.5f);

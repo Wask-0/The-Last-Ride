@@ -61,6 +61,9 @@ namespace LastRide.Player
         /// <summary>Время замерзания с лампой в акте 3, когда лампа погасла, с (по умолчанию — <c>warmth.lampOutFreezeSeconds</c>).</summary>
         public float LampOutFreezeSeconds { get; set; } = -1f;
 
+        /// <summary>Скорость робота, м/с (пишет GameManager каждый кадр): стоящий на месте с горящей лампой греется.</summary>
+        public float MoveSpeed { get; set; }
+
         /// <summary>Множитель скорости потери тепла (порыв ветра в акте 3 — ×2).</summary>
         public float ExposureMultiplier { get; set; } = 1f;
 
@@ -123,6 +126,10 @@ namespace LastRide.Player
                 bool lampBurning = spark != null && spark.State == SparkState.Burning && spark.Source == FireSourceKind.Lamp;
                 float seconds = mode == PlayerMode.OnFootWithLamp && !lampBurning ? EffectiveLampOutSeconds : EffectiveOutsideSeconds;
                 rate = -s.max / Mathf.Max(0.1f, seconds) * Mathf.Max(0f, ExposureMultiplier);
+
+                // Акт 3: горящая лампа греет, пока робот стоит на месте (ТЗ 3/4.3 + решение 13.1) — без этого тропа не проходима.
+                if (mode == PlayerMode.OnFootWithLamp && lampBurning && MoveSpeed <= s.lampStandSpeed && s.lampWarmSeconds > 0f)
+                    rate = s.max / s.lampWarmSeconds;
             }
 
             LastRate = rate;

@@ -132,6 +132,11 @@ namespace LastRide.Core
             [Range(0, 1)] public float beaconSummitLevel = 0.55f;
             [Tooltip("За сколько секунд гул нарастает до полного после доставки Искры.")]
             [Min(1)] public float beaconFinaleRise = 20f;
+            [Header("Главное меню")]
+            [Tooltip("Громкость музыки в главном меню (0 — тишина).")]
+            [Range(0, 1)] public float menuMusicLevel = 0.8f;
+            [Tooltip("Громкость ветра и фона в главном меню.")]
+            [Range(0, 1)] public float menuAmbienceLevel = 0.4f;
             [Header("Ducking (10.5)")]
             [Tooltip("На сколько дБ приглушается музыка во время аудиозаписи.")]
             public float duckDb = -9f;
@@ -357,6 +362,10 @@ namespace LastRide.Core
             [Min(0.1f)] public float defaultFreezeSeconds = 90f;
             [Tooltip("Акт 3: время замерзания с погасшей лампой, с (по умолчанию; акт может переопределить).")]
             [Min(0.1f)] public float lampOutFreezeSeconds = 20f;
+            [Tooltip("Акт 3: за сколько секунд горящая лампа согревает стоящего робота от 0 до максимума.")]
+            [Min(0)] public float lampWarmSeconds = 30f;
+            [Tooltip("Акт 3: скорость, м/с, ниже которой робот считается стоящим (лампа греет).")]
+            [Min(0)] public float lampStandSpeed = 0.35f;
             [Tooltip("За сколько секунд робот застывает после того, как тепло дошло до 0.")]
             [Min(0.1f)] public float freezeToStopSeconds = 3f;
             [Tooltip("Доля шкалы, ниже которой HUD мигает.")]

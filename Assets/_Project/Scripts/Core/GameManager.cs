@@ -106,6 +106,9 @@ namespace LastRide.Core
             Config = GameConfig.Load();
             Difficulty = Config != null ? Config.defaultDifficulty : null;
             GameInput.Initialize();
+            // В редакторе фокус игнорируется (автотесты через MCP), в билде — обычное поведение: без фокуса устройства отключаются.
+            if (!Application.isEditor && UnityEngine.InputSystem.InputSystem.settings != null)
+                UnityEngine.InputSystem.InputSystem.settings.backgroundBehavior = UnityEngine.InputSystem.InputSettings.BackgroundBehavior.ResetAndDisableNonBackgroundDevices;
             Spark = new LastRide.Fire.SparkFire(Balance);
             Warmth = new LastRide.Player.WarmthSystem(Balance);
             DebugTools.DebugOverlay.RegisterLine("Тепло", () => Warmth.ToString());
@@ -157,6 +160,8 @@ namespace LastRide.Core
                 Acts.Tick(Time.deltaTime);
                 AudioLogs.Tick(Time.deltaTime);
                 Tutorial.Tick(Time.deltaTime);
+                var robot = LastRide.Player.RobotController.Active;
+                Warmth.MoveSpeed = robot != null && !robot.Seated ? robot.Speed : 0f;
                 Warmth.Tick(Time.deltaTime, PlayerMode, Spark);
             }
         }
