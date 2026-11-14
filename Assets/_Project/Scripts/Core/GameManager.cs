@@ -52,6 +52,9 @@ namespace LastRide.Core
         /// <summary>Смерть и рестарт с чекпоинта (ТЗ 4.7).</summary>
         public LastRide.Save.DeathDirector Death { get; private set; }
 
+        /// <summary>Белый фейд, титры с цветком и возврат в меню (12.3).</summary>
+        public LastRide.UI.CreditsDirector Credits { get; private set; }
+
         /// <summary>Переходы между сценами меню и игры (11.3).</summary>
         public SceneFlow Flow { get; private set; }
 
@@ -121,6 +124,7 @@ namespace LastRide.Core
             Fader = gameObject.AddComponent<LastRide.UI.ScreenFader>();
             LastRide.UI.UiKit.EnsureEventSystem(transform);
             gameObject.AddComponent<LastRide.UI.SubtitleView>();
+            Credits = gameObject.AddComponent<LastRide.UI.CreditsDirector>();
             gameObject.AddComponent<LastRide.UI.SettingsView>();
             gameObject.AddComponent<LastRide.UI.PauseMenuView>();
             gameObject.AddComponent<LastRide.UI.TutorialHintView>();

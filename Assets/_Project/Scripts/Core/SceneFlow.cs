@@ -64,7 +64,7 @@ namespace LastRide.Core
             Busy = true;
             var gm = GameManager.Instance;
             var fader = gm.Fader;
-            if (fader != null) yield return fader.FadeTo(1f, Cfg.fadeOutSeconds);
+            if (fader != null) { fader.PrepareColor(LastRide.UI.ScreenFader.DarkColor); yield return fader.FadeTo(1f, Cfg.fadeOutSeconds); }
 
             if (data == null) SaveSystem.Delete();
             gm.ResetForNewGame();
@@ -93,7 +93,7 @@ namespace LastRide.Core
             Busy = true;
             var gm = GameManager.Instance;
             var fader = gm.Fader;
-            if (fader != null) yield return fader.FadeTo(1f, Cfg.fadeOutSeconds);
+            if (fader != null) { fader.PrepareColor(LastRide.UI.ScreenFader.DarkColor); yield return fader.FadeTo(1f, Cfg.fadeOutSeconds); }
 
             gm.ResetForNewGame();
             var op = SceneManager.LoadSceneAsync(SceneNames.MainMenu);

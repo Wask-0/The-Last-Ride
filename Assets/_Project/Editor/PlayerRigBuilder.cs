@@ -102,6 +102,8 @@ namespace LastRide.Editor
             var vanCam = CameraRigBuilder.CreateVanCamera(vanCtrl);
             vanCam.transform.SetParent(root, true);
 
+            FinaleBuilder.Rebuild(); // гнездо и лифт Маяка (12.1)
+
             Debug.Log($"[The Last Ride] Player rig built: фургон на {VanDistance} м, банка {jarPos}, робот {robotPos}.");
             return root;
         }

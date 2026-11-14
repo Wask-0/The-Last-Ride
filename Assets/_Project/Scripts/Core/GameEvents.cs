@@ -110,7 +110,14 @@ namespace LastRide.Core
 
     public struct VanBrokeDown : IGameEvent { }
 
+    /// <summary>Искра вставлена в гнездо Маяка (начало финала: гул, кода).</summary>
     public struct SparkDelivered : IGameEvent { }
+
+    /// <summary>Кабинка лифта с Искрой доехала до фонаря Маяка.</summary>
+    public struct FinaleLiftArrived : IGameEvent { }
+
+    /// <summary>Огни горят, реплика A3_FINAL отзвучала — пора на белый фейд и титры (12.3).</summary>
+    public struct FinaleCompleted : IGameEvent { }
 
     // ---- Аудиозаписи ----
     /// <summary>Запись началась (Log.clip может быть пустым — тогда радиопомехи и авто-тайминг).</summary>

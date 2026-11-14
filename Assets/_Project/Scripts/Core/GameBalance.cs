@@ -28,6 +28,7 @@ namespace LastRide.Core
         public FrostSettings frost = new FrostSettings();
         public DeathSettings death = new DeathSettings();
         public MenuSettings menu = new MenuSettings();
+        public FinaleSettings finale = new FinaleSettings();
         public AudioSettingsData audio = new AudioSettingsData();
 
         /// <summary>Аудиоядро (этап 10.1): громкости шин, лимитер, пул SFX, ducking.</summary>
@@ -190,6 +191,62 @@ namespace LastRide.Core
             public float lookSideOffset = 2.6f;
             [Tooltip("Размер шрифта кнопок меню.")]
             [Min(10f)] public float buttonFontSize = 36f;
+        }
+
+        /// <summary>Финал у Маяка (этап 12): вставка Искры в гнездо и подъём лифта.</summary>
+        [Serializable]
+        public sealed class FinaleSettings
+        {
+            [Tooltip("Подсказка у гнезда (без «[E]»).")]
+            public string socketPrompt = "Вставить Искру";
+            [Tooltip("За сколько секунд робот поворачивается к гнезду.")]
+            [Min(0.1f)] public float lookSeconds = 0.9f;
+            [Tooltip("За сколько секунд опускается лампа к гнезду.")]
+            [Min(0.1f)] public float lowerSeconds = 1.0f;
+            [Tooltip("Пауза после того, как Искра в кабинке, до начала подъёма.")]
+            [Min(0)] public float preLiftSeconds = 0.8f;
+            [Tooltip("Сколько секунд кабинка едет вверх.")]
+            [Min(1)] public float liftSeconds = 18f;
+            [Tooltip("Сколько секунд после начала подъёма робот пятится от Маяка, чтобы кабинка осталась в кадре.")]
+            [Min(0)] public float retreatSeconds = 4f;
+            [Header("Огни Маяка")]
+            [Tooltip("За сколько секунд зажигается один ряд огней.")]
+            [Min(0.05f)] public float lightRowRampSeconds = 0.7f;
+            [Tooltip("Яркость горящих огней (HDR-множитель свечения).")]
+            [Min(0)] public float lightEmission = 8f;
+            [Tooltip("Окна электростанции зажигаются за столько секунд после вставки Искры.")]
+            [Min(0.05f)] public float stationRampSeconds = 3f;
+            [Tooltip("Фонарь на вершине разгорается за столько секунд после прибытия кабинки.")]
+            [Min(0.05f)] public float lanternRampSeconds = 3f;
+            [Tooltip("Сила света фонаря (point light) и его дальность, м.")]
+            [Min(0)] public float lanternLightIntensity = 60f;
+            [Min(1)] public float lanternLightRange = 120f;
+            [Header("Реплика A3_FINAL")]
+            [Tooltip("Пауза после прибытия кабинки до реплики A3_FINAL.")]
+            [Min(0)] public float finalLogDelaySeconds = 1.5f;
+            [Tooltip("Пауза после конца реплики до события FinaleCompleted (начало белого фейда, 12.3).")]
+            [Min(0)] public float afterLogSeconds = 2f;
+            [Header("Белый фейд и титры")]
+            [Tooltip("За сколько секунд экран заливается белым после конца финала.")]
+            [Min(0.1f)] public float whiteFadeSeconds = 4f;
+            [Tooltip("За сколько секунд белый уходит, открывая цветок.")]
+            [Min(0.1f)] public float clearFadeSeconds = 2.5f;
+            [Tooltip("За сколько секунд цветок вырастает и раскрывается.")]
+            [Min(1)] public float flowerGrowSeconds = 16f;
+            [Tooltip("Пауза от появления цветка до первой строки титров.")]
+            [Min(0)] public float creditsStartDelaySeconds = 2.5f;
+            [Tooltip("Сколько секунд держится каждая строка титров (включая появление и угасание).")]
+            [Min(1)] public float creditsLineSeconds = 5f;
+            [Tooltip("Пауза после последней строки до ухода в белый и в меню.")]
+            [Min(0)] public float creditsHoldSeconds = 3f;
+            [Tooltip("За сколько секунд титры уходят в белый перед возвратом в меню.")]
+            [Min(0.1f)] public float endFadeSeconds = 2f;
+            [Tooltip("Через сколько секунд титров можно пропустить (Esc / Enter / Space).")]
+            [Min(0)] public float skipAfterSeconds = 3f;
+            [Tooltip("Строки титров по очереди (первая — крупно).")]
+            public string[] creditsLines = { "THE LAST RIDE", "Ты довёз Искру до Вершины.", "Тепло — это не цифра на шкале.", "Спасибо за игру." };
+            [Tooltip("Насколько быстро камера следит за кабинкой (1/с).")]
+            [Min(0.1f)] public float cameraFollow = 3f;
         }
 
         /// <summary>Пост-обработка (этап 9.3): общие параметры и реакция на холод. Значения по актам — в <see cref="ActLighting"/>.</summary>
