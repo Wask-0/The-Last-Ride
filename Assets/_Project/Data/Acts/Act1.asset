@@ -54,7 +54,13 @@ MonoBehaviour:
     ambientSky: {r: 0.78, g: 0.64, b: 0.62, a: 1}
     ambientEquator: {r: 0.58, g: 0.52, b: 0.56, a: 1}
     ambientGround: {r: 0.36, g: 0.4, b: 0.55, a: 1}
-    colorTemperature: 25
+    skyZenith: {r: 0.32, g: 0.45, b: 0.72, a: 1}
+    skyHorizon: {r: 1, g: 0.72, b: 0.55, a: 1}
+    colorTemperature: 10
+    bloom: 0.7
+    postExposure: 0
+    colorFilter: {r: 1, g: 0.98, b: 0.95, a: 1}
+    filmGrain: 0.12
     saturation: 5
     contrast: 5
     vignette: 0.2

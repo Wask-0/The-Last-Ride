@@ -22,6 +22,111 @@ namespace LastRide.Core
         public TutorialSettings tutorial = new TutorialSettings();
         public BreakdownSettings breakdown = new BreakdownSettings();
         public LampHandSettings lampHand = new LampHandSettings();
+        public SnowfallSettings snowfall = new SnowfallSettings();
+        public AtmosphereSettings atmosphere = new AtmosphereSettings();
+        public PostFxSettings postFx = new PostFxSettings();
+        public FrostSettings frost = new FrostSettings();
+
+        /// <summary>Иней на экране (этап 9.4).</summary>
+        [Serializable]
+        public sealed class FrostSettings
+        {
+            [Tooltip("Сила инея от холода при полном холоде (0..1).")]
+            [Range(0, 1)] public float coldStrength = 0.9f;
+            [Tooltip("Множитель базового инея погоды (WeatherPreset.frost).")]
+            [Range(0, 1)] public float weatherStrength = 1f;
+            [Tooltip("Скорость нарастания инея, 1/с.")]
+            [Min(0.01f)] public float growSpeed = 0.5f;
+            [Tooltip("Скорость таяния инея, 1/с (когда согрелись).")]
+            [Min(0.01f)] public float meltSpeed = 0.35f;
+            [Tooltip("За сколько секунд экран полностью покрывается при смерти.")]
+            [Min(0.05f)] public float deathFillSeconds = 1.5f;
+            [Tooltip("За сколько секунд заполнение тает после восстановления.")]
+            [Min(0.05f)] public float meltSeconds = 1.2f;
+        }
+
+        /// <summary>Пост-обработка (этап 9.3): общие параметры и реакция на холод. Значения по актам — в <see cref="ActLighting"/>.</summary>
+        [Serializable]
+        public sealed class PostFxSettings
+        {
+            [Header("Bloom")]
+            [Tooltip("Порог яркости Bloom (HDR).")]
+            [Min(0)] public float bloomThreshold = 1f;
+            [Range(0, 1)] public float bloomScatter = 0.6f;
+            [Header("Холод")]
+            [Tooltip("Доля холода (1 − тепло), с которой начинается эффект.")]
+            [Range(0, 1)] public float coldStart = 0.25f;
+            [Tooltip("Добавка к виньетке при полном холоде.")]
+            [Range(0, 1)] public float coldVignette = 0.35f;
+            [Tooltip("Обесцвечивание при полном холоде (Color Adjustments → Saturation).")]
+            [Range(0, 100)] public float coldDesaturation = 45f;
+            [Tooltip("Размытие при холоде (Depth of Field Gaussian): с какой доли холода включается.")]
+            [Range(0, 1)] public float blurStart = 0.5f;
+            [Tooltip("Дистанция начала размытия, м: при начале эффекта → при полном холоде.")]
+            public Vector2 blurStartDistance = new Vector2(60f, 1.5f);
+            [Tooltip("Дистанция конца размытия, м: при начале эффекта → при полном холоде.")]
+            public Vector2 blurEndDistance = new Vector2(120f, 8f);
+            [Tooltip("Максимальный радиус размытия при полном холоде.")]
+            [Range(0.5f, 3)] public float blurMaxRadius = 1.6f;
+            [Header("Сглаживание")]
+            [Tooltip("Скорость реакции на холод, 1/с.")]
+            [Min(0.1f)] public float coldSmoothing = 3f;
+        }
+
+        /// <summary>Туман, небо и свет по актам (этап 9.2). Сами значения актов — в <see cref="ActSettings"/>.</summary>
+        [Serializable]
+        public sealed class AtmosphereSettings
+        {
+            [Tooltip("Насколько шторм (фаза акта 2) приглушает солнце (доля интенсивности при штормовом миксе 1).")]
+            [Range(0, 1)] public float stormSunDim = 0.45f;
+            [Tooltip("Насколько шторм приглушает рассеянный свет неба.")]
+            [Range(0, 1)] public float stormAmbientDim = 0.25f;
+            [Tooltip("Материал неба (шейдер The Last Ride/Sky). Создаёт «Setup/Create Materials».")]
+            public Material skyMaterial;
+            [Tooltip("Плотность тумана, при которой небо полностью сливается с туманом (белая мгла).")]
+            [Min(0.001f)] public float whiteoutFogDensity = 0.03f;
+            [Tooltip("Скорость сглаживания света к значениям акта: множитель к 1/transitionSeconds акта.")]
+            [Min(0.1f)] public float lightingSmoothing = 3f;
+        }
+
+        /// <summary>Частицы метели вокруг камеры (этап 9.1): дальний слой мелкого снега и ближний слой крупных хлопьев.</summary>
+        [Serializable]
+        public sealed class SnowfallSettings
+        {
+            [Tooltip("Материал снежинки (URP Particles/Unlit, прозрачный, мягкий круг). Создаёт «Setup/Create Materials».")]
+            public Material flakeMaterial;
+            [Header("Дальний слой (мелкий снег)")]
+            [Tooltip("Частиц в секунду при плотности снега 1.")]
+            [Min(0)] public float farRate = 5000f;
+            [Tooltip("Размеры области вокруг камеры, м (X, Y, Z).")]
+            public Vector3 farVolume = new Vector3(32f, 18f, 32f);
+            [Tooltip("Время жизни частицы, с.")]
+            [Min(0.5f)] public float farLifetime = 6f;
+            [Tooltip("Размер частицы (мин, макс), м.")]
+            public Vector2 farSize = new Vector2(0.05f, 0.12f);
+            [Range(0, 1)] public float farAlpha = 0.85f;
+            [Header("Ближний слой (крупные хлопья у камеры)")]
+            [Min(0)] public float nearRate = 220f;
+            public Vector3 nearVolume = new Vector3(9f, 6f, 9f);
+            [Min(0.2f)] public float nearLifetime = 2.2f;
+            public Vector2 nearSize = new Vector2(0.12f, 0.32f);
+            [Range(0, 1)] public float nearAlpha = 0.5f;
+            [Tooltip("Доля ближнего слоя в шторме акта 2 (в акте 3 — 1).")]
+            [Range(0, 1)] public float nearStormShare = 0.3f;
+            [Tooltip("Как быстро меняется доля ближнего слоя, 1/с.")]
+            [Min(0.01f)] public float nearBlendSpeed = 0.2f;
+            [Header("Движение")]
+            [Tooltip("Какая доля скорости ветра сносит снег по горизонтали.")]
+            [Range(0, 2)] public float windCarry = 0.8f;
+            [Tooltip("Минимальная скорость падения, м/с (даже в штиль).")]
+            [Min(0)] public float minFallSpeed = 0.8f;
+            [Tooltip("Во сколько раз порыв усиливает снос снега при силе порыва 1.")]
+            [Min(0)] public float gustBoost = 1.2f;
+            [Tooltip("Завихрения: боковая турбулентность, м/с.")]
+            [Min(0)] public float turbulence = 0.6f;
+            [Tooltip("Насколько вперёд по ходу камеры смещается область появления (в секундах скорости камеры).")]
+            [Min(0)] public float leadSeconds = 1.2f;
+        }
 
         [Serializable]
         public sealed class FireSettings

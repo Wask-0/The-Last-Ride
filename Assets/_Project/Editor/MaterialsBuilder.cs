@@ -77,9 +77,74 @@ namespace LastRide.Editor
                 else Debug.LogError("[MaterialsBuilder] Шейдер URP Particles/Unlit не найден.");
             }
 
+            CreateSnowflake();
+
             AssetDatabase.SaveAssets();
             Debug.Log("[The Last Ride] Materials ready: " + Folder);
         }
+
+        public const string SnowflakePath = Folder + "M_Snowflake.mat";
+        private const string SnowTexPath = Folder + "T_SnowSoft.png";
+
+        /// <summary>Материал снежинок метели (9.1) + текстура мягкого круга; привязывает к GameBalance.snowfall.flakeMaterial.</summary>
+        private static void CreateSnowflake()
+        {
+            GeneratedAssets.EnsureFolder(Folder.TrimEnd('/'));
+            if (AssetDatabase.LoadAssetAtPath<Texture2D>(SnowTexPath) == null)
+            {
+                var tex = LastRide.Weather.SnowfallView.MakeSoftCircle(32);
+                System.IO.File.WriteAllBytes(SnowTexPath, tex.EncodeToPNG());
+                Object.DestroyImmediate(tex);
+                AssetDatabase.ImportAsset(SnowTexPath);
+                var imp = (TextureImporter)AssetImporter.GetAtPath(SnowTexPath);
+                imp.alphaIsTransparency = true;
+                imp.mipmapEnabled = false;
+                imp.wrapMode = TextureWrapMode.Clamp;
+                imp.SaveAndReimport();
+            }
+
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(SnowflakePath);
+            if (mat == null)
+            {
+                var sh = Shader.Find("Universal Render Pipeline/Particles/Unlit");
+                if (sh == null) { Debug.LogError("[MaterialsBuilder] Нет шейдера Particles/Unlit."); return; }
+                mat = new Material(sh) { name = "M_Snowflake" };
+                mat.SetFloat("_Surface", 1f);
+                mat.SetFloat("_Blend", 0f);
+                mat.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                mat.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                mat.SetFloat("_ZWrite", 0f);
+                mat.SetOverrideTag("RenderType", "Transparent");
+                mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+                mat.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(SnowTexPath));
+                mat.SetColor("_BaseColor", Color.white);
+                AssetDatabase.CreateAsset(mat, SnowflakePath);
+            }
+
+            var cfg = LastRide.Core.GameConfig.Load();
+            if (cfg != null && cfg.balance != null && cfg.balance.snowfall.flakeMaterial == null)
+            {
+                cfg.balance.snowfall.flakeMaterial = mat;
+                EditorUtility.SetDirty(cfg.balance);
+            }
+
+            // Небо (9.2): свой градиентный шейдер, сливается с туманом.
+            var skyMat = AssetDatabase.LoadAssetAtPath<Material>(SkyPath);
+            if (skyMat == null)
+            {
+                var skySh = Shader.Find("The Last Ride/Sky");
+                if (skySh == null) Debug.LogError("[MaterialsBuilder] Нет шейдера The Last Ride/Sky.");
+                else { skyMat = new Material(skySh) { name = "M_Sky" }; AssetDatabase.CreateAsset(skyMat, SkyPath); }
+            }
+            if (skyMat != null && cfg != null && cfg.balance != null && cfg.balance.atmosphere.skyMaterial == null)
+            {
+                cfg.balance.atmosphere.skyMaterial = skyMat;
+                EditorUtility.SetDirty(cfg.balance);
+            }
+        }
+
+        public const string SkyPath = Folder + "M_Sky.mat";
 
         public const string SparkPath = Folder + "M_Spark.mat";
         public static Material Spark => LoadOrCreate(SparkPath);

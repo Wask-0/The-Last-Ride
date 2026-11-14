@@ -21,8 +21,13 @@ MonoBehaviour:
   warmth:
     max: 100
     vanRecoverSeconds: 8
+    defaultFreezeSeconds: 90
+    lampOutFreezeSeconds: 20
     freezeToStopSeconds: 3
     criticalFraction: 0.2
+    tickRateWarm: 2.5
+    tickRateCold: 0.8
+    tickPitchCold: 0.6
     jamThreshold: 30
     jamDuration: 0.2
     jamInterval: {x: 4, y: 1.2}
@@ -33,6 +38,22 @@ MonoBehaviour:
     iceInertiaSeconds: 0.6
     mouseSensitivity: 0.12
     interactDistance: 2.5
+    maxExitVanSpeed: 1.5
+    boardingCooldown: 0.5
+  sparkVisual:
+    minBurnBrightness: 0.3
+    brightnessExponent: 0.5
+    flameColor: {r: 1, g: 0.62, b: 0.28, a: 1}
+    flickerHz: 9
+    flickerAmount: 0.18
+    maxSparksPerSecond: 16
+    embersBrightness: 0.16
+    embersColor: {r: 0.9, g: 0.1, b: 0.04, a: 1}
+    embersPulseHz: 2.2
+    embersPulseDepth: 0.55
+    embersSparksPerSecond: 1.5
+    colorBlendSpeed: 4
+    brightnessSpeed: 5
   van:
     maxSpeed: 14
     reverseMaxSpeed: 4
@@ -68,6 +89,23 @@ MonoBehaviour:
     interval: {x: 8, y: 20}
     duration: {x: 1.5, y: 3}
     warmthLossMultiplier: 2
+    vanForce: 3500
+    vanGripLoss: 0.7
+    robotPush: 2.5
+    referenceWind: 12
+    attackSeconds: 0.35
+    releaseSeconds: 0.6
+    directionJitterDeg: 15
+  weather:
+    stormCycleStartsWithStorm: 1
+    phaseBlendSeconds: 4
+    vanCameraStormRumbleDeg: 0.35
+    vanCameraGustRumbleDeg: 1.2
+    robotStormTremorDeg: 0.4
+    robotGustLeanDeg: 3
+    vanSwayTorque: 1500
+    vanGustRollTorque: 2500
+    vanSwayHz: 0.5
   vanCamera:
     distance: 5
     height: 4.3
@@ -90,7 +128,100 @@ MonoBehaviour:
     deathFadeSeconds: 1.5
     finalWhiteFadeSeconds: 4
     pickupFlySeconds: 0.35
+    stoveFlapSeconds: 0.35
+    hudCriticalFraction: 0.2
+    hudBlinkHz: 2.5
+    hudAlpha: 0.85
+    hudBarSpeed: 2
   subtitles:
     secondsPerChar: 0.07
     minLineSeconds: 2
     duckingDb: -9
+    queueGapSeconds: 0.8
+    lastLineHoldSeconds: 0.5
+    fontSize: 36
+    bottomOffset: 70
+    glitchSeconds: 0.4
+    glitchJitterPixels: 7
+    fadeSpeed: 6
+    flickerAmount: 0.08
+  tutorial:
+    startKindling: 3
+    firstHintDelaySeconds: 1.5
+    hintSeconds: 6
+    sitHintDelaySeconds: 7
+    drivingHintDelaySeconds: 1.5
+    findJarHintDelaySeconds: 9
+    hintFontSize: 30
+    hintTopOffset: 150
+    hintFadeSpeed: 4
+  breakdown:
+    stopSeconds: 3.5
+    maxStopDistance: 20
+    cameraTrauma: 0.8
+    logDelaySeconds: 1.2
+    sceneDelaySeconds: 1.5
+    maxWaitSeconds: 30
+    exitSeconds: 1
+    lookAtVanSeconds: 1
+    stepBackSeconds: 0.6
+    raiseSeconds: 1.8
+    holdSeconds: 0.8
+    lookAlongPathSeconds: 1.2
+    hintText: "\u0418\u0441\u043A\u0440\u0430 \u0432 \u043B\u0430\u043C\u043F\u0435.
+      \u0418\u0434\u0438\u0442\u0435 \u0432\u0432\u0435\u0440\u0445 \u043F\u043E
+      \u0441\u043A\u043B\u043E\u043D\u0443"
+  lampHand:
+    carryHand: {x: 0.13, y: 0.07, z: 0.6}
+    carryElbow: {x: 0.45, y: -0.25, z: 0.1}
+    hiddenHand: {x: 0.34, y: -0.85, z: 0.3}
+    lampBelowHand: 0.34
+    armLength: 0.42
+    swayVertical: 0.02
+    swaySide: 0.012
+    swingDegrees: 5
+    swayStepsPerSecond: 1.6
+    gustDimAmount: 0.55
+    gustFlickerMultiplier: 2.5
+    gustFlickerExtra: 0.3
+    gustLampTiltDegrees: 9
+    panelFadeSeconds: 0.2
+    rHintDelaySeconds: 9
+    rHintText: "R \u2014 \u043F\u043E\u0434\u043A\u0438\u043D\u0443\u0442\u044C \u0442\u043E\u043F\u043B\u0438\u0432\u043E
+      \u0432 \u043B\u0430\u043C\u043F\u0443"
+  snowfall:
+    flakeMaterial: {fileID: 2100000, guid: 1758711b09d77d84d9f4317d5daf6cf9, type: 2}
+    farRate: 5000
+    farVolume: {x: 32, y: 18, z: 32}
+    farLifetime: 6
+    farSize: {x: 0.05, y: 0.12}
+    farAlpha: 0.85
+    nearRate: 220
+    nearVolume: {x: 9, y: 6, z: 9}
+    nearLifetime: 2.2
+    nearSize: {x: 0.12, y: 0.32}
+    nearAlpha: 0.5
+    nearStormShare: 0.3
+    nearBlendSpeed: 0.2
+    windCarry: 0.8
+    minFallSpeed: 0.8
+    gustBoost: 1.2
+    turbulence: 0.6
+    leadSeconds: 1.2
+  atmosphere:
+    stormSunDim: 0.45
+    stormAmbientDim: 0.25
+    skyMaterial: {fileID: 2100000, guid: b4fc98474f1fc3d4ea5966177566edce, type: 2}
+    whiteoutFogDensity: 0.03
+    lightingSmoothing: 3
+  postFx:
+    bloomThreshold: 1
+    bloomScatter: 0.6
+    coldStart: 0.25
+    coldVignette: 0.35
+    coldDesaturation: 45
+    blurStart: 0.5
+    blurStartDistance: {x: 60, y: 1.5}
+    blurEndDistance: {x: 120, y: 8}
+    blurMaxRadius: 1.6
+    coldSmoothing: 3

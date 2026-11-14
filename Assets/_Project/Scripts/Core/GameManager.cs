@@ -105,6 +105,10 @@ namespace LastRide.Core
             gameObject.AddComponent<LastRide.UI.SubtitleView>();
             gameObject.AddComponent<LastRide.UI.TutorialHintView>();
             gameObject.AddComponent<LastRide.Weather.WindPusher>();
+            gameObject.AddComponent<LastRide.Weather.SnowfallView>();
+            gameObject.AddComponent<LastRide.Weather.AtmosphereView>();
+            gameObject.AddComponent<LastRide.Weather.PostFxView>();
+            gameObject.AddComponent<LastRide.Weather.FrostView>();
             DebugTools.DebugOverlay.RegisterLine("Путь", () => Progress.ToString());
             DebugTools.DebugOverlay.RegisterLine("Инвентарь", () => Inventory.ToString());
             DebugTools.DebugOverlay.RegisterLine("Огонь", () => Spark.ToString());

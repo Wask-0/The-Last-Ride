@@ -34,8 +34,22 @@ namespace LastRide.Core
         public Color ambientSky = new Color(0.7f, 0.65f, 0.7f);
         public Color ambientEquator = new Color(0.55f, 0.52f, 0.58f);
         public Color ambientGround = new Color(0.35f, 0.38f, 0.5f);
+        [Header("Небо")]
+        [Tooltip("Цвет неба в зените.")]
+        public Color skyZenith = new Color(0.35f, 0.5f, 0.75f);
+        [Tooltip("Цвет неба у горизонта (закат в акте 1).")]
+        public Color skyHorizon = new Color(1f, 0.78f, 0.62f);
+        [Header("Цвет и пост-обработка")]
         [Tooltip("Color Adjustments / White Balance: температура (−100..100).")]
         [Range(-100, 100)] public float colorTemperature = 0f;
+        [Tooltip("Bloom: сила свечения (Искра, огни Маяка).")]
+        [Range(0, 3)] public float bloom = 0.6f;
+        [Tooltip("Color Adjustments: экспозиция после обработки (EV). Акт 3 уходит в белое.")]
+        [Range(-2, 2)] public float postExposure = 0f;
+        [Tooltip("Color Adjustments: цветовой фильтр (множитель цвета кадра).")]
+        public Color colorFilter = Color.white;
+        [Tooltip("Film Grain: сила зерна, 0..1.")]
+        [Range(0, 1)] public float filmGrain = 0.15f;
         [Range(-100, 100)] public float saturation = 0f;
         [Range(-100, 100)] public float contrast = 0f;
         [Tooltip("Базовая виньетка (холод добавляется сверху).")]
