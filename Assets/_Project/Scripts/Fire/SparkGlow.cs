@@ -48,7 +48,12 @@ namespace LastRide.Fire
         private float _baseLightIntensity;
         private float _colorBlend = 1f; // 1 — пламя, 0 — уголь
         private float _noiseSeed;
+        private float _gust;
+        private GameBalance.LampHandSettings _lampFallback;
         private GameBalance.SparkVisualSettings _fallback;
+
+        /// <summary>Сила порыва на пламени 0..1 (сглажена) — лампа наклоняется по ветру.</summary>
+        public float GustBend => _gust;
 
         private GameBalance.SparkVisualSettings Settings
         {
@@ -85,8 +90,16 @@ namespace LastRide.Fire
                     float f = Mathf.Pow(spark.Fraction, s.brightnessExponent);
                     target = Mathf.Lerp(s.minBurnBrightness, 1f, f);
                     rate = s.maxSparksPerSecond * target * target;
-                    float n = Mathf.PerlinNoise(_noiseSeed, Time.time * s.flickerHz) * 2f - 1f;
-                    flicker = 1f + n * s.flickerAmount;
+                    float gust = 0f;
+                    if (kind == FireSourceKind.Lamp && gm.Weather != null && gm.Weather.GustActive)
+                        gust = Mathf.Clamp01(gm.Weather.GustStrength01);
+                    var lh = gm.Balance != null ? gm.Balance.lampHand : _lampFallback ??= new GameBalance.LampHandSettings();
+                    _gust = Mathf.MoveTowards(_gust, gust, 4f * Time.deltaTime);
+                    float hz = s.flickerHz * Mathf.Lerp(1f, lh.gustFlickerMultiplier, _gust);
+                    float amount = s.flickerAmount + lh.gustFlickerExtra * _gust;
+                    float n = Mathf.PerlinNoise(_noiseSeed, Time.time * hz) * 2f - 1f;
+                    flicker = (1f + n * amount) * (1f - lh.gustDimAmount * _gust);
+                    rate *= 1f + 1.5f * _gust; // порыв срывает искры
                 }
                 else if (spark.State == SparkState.Embers)
                 {

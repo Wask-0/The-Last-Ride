@@ -94,14 +94,14 @@ namespace LastRide.Level
             switch (kind)
             {
                 case LevelTriggerKind.ActStart:
-                    gm.Weather.SetAct(act);
+                    gm.Acts.StartAct(act);
                     Story();
                     break;
                 case LevelTriggerKind.Checkpoint:
                     EventBus<CheckpointReached>.Publish(new CheckpointReached { CheckpointId = id });
                     break;
                 case LevelTriggerKind.Tutorial:
-                    EventBus<TutorialHintRequested>.Publish(new TutorialHintRequested { Text = hintText, Duration = hintDuration });
+                    gm.Tutorial.ShowTriggerHint(id, hintText, hintDuration);
                     break;
                 case LevelTriggerKind.Breakdown:
                     EventBus<VanBrokeDown>.Publish(new VanBrokeDown());

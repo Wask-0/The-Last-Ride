@@ -24,8 +24,9 @@ namespace LastRide.Editor
             if (PrefabBuilder.Load("Vehicles/Van") == null) PrefabBuilder.BuildAll();
             GeneratedAssets.EnsureFolder(Root.TrimEnd('/'));
             BuildVan();
+            BuildLamp(); // раньше робота: лампа в руке (HeldLamp) — вложенный экземпляр префаба Lamp
             BuildRobot();
-            BuildLamp();
+            BuildSparkJar();
             foreach (var id in FuelIds) BuildFuel(id);
             AssetDatabase.SaveAssets();
             Debug.Log("[The Last Ride] Gameplay prefabs ready: " + Root);
@@ -47,6 +48,7 @@ namespace LastRide.Editor
             SetLayerRecursive(root, LayerMask.NameToLayer(Layers.Vehicle));
             if (root.GetComponent<Rigidbody>() == null) root.AddComponent<Rigidbody>();
             if (root.GetComponent<VanController>() == null) root.AddComponent<VanController>();
+            if (root.GetComponent<LastRide.Narrative.StoveSocket>() == null) root.AddComponent<LastRide.Narrative.StoveSocket>(); // пролог: поставить Искру в печку
             // Печка: свет в окне, свечение стекла и искры из трубы зависят от запаса огня.
             AttachSparkGlow(root, LastRide.Core.FireSourceKind.Stove, Anchors.StoveLight, "Window", Anchors.ChimneyTop, new Vector3(0f, 0.05f, 0f), 0.06f);
             PrefabUtility.SaveAsPrefabAsset(root, VanPath);
@@ -87,6 +89,29 @@ namespace LastRide.Editor
             var cfg = GameConfig.Load();
             if (cfg != null) pickup.fuel = cfg.GetFuel(id);
             PrefabUtility.SaveAsPrefabAsset(root, path);
+            PrefabUtility.UnloadPrefabContents(root);
+        }
+
+        public const string SparkJarPath = Root + "SparkJar.prefab";
+        public static GameObject SparkJar => AssetDatabase.LoadAssetAtPath<GameObject>(SparkJarPath);
+
+        /// <summary>Банка с Искрой (пролог): Variant от Props/SparkJar, слой Interactable, компонент SparkJarPickup.</summary>
+        private static void BuildSparkJar()
+        {
+            if (SparkJar == null)
+            {
+                var src = PrefabBuilder.Load("Props/SparkJar");
+                if (src == null) { Debug.LogError("[The Last Ride] Нет модели банки Props/SparkJar."); return; }
+                var instance = (GameObject)PrefabUtility.InstantiatePrefab(src);
+                instance.name = "SparkJar";
+                PrefabUtility.SaveAsPrefabAsset(instance, SparkJarPath);
+                Object.DestroyImmediate(instance);
+            }
+
+            var root = PrefabUtility.LoadPrefabContents(SparkJarPath);
+            SetLayerRecursive(root, LayerMask.NameToLayer(Layers.Interactable));
+            if (root.GetComponent<LastRide.Narrative.SparkJarPickup>() == null) root.AddComponent<LastRide.Narrative.SparkJarPickup>();
+            PrefabUtility.SaveAsPrefabAsset(root, SparkJarPath);
             PrefabUtility.UnloadPrefabContents(root);
         }
 
@@ -259,6 +284,22 @@ namespace LastRide.Editor
                     arms.transform.localRotation = Quaternion.identity;
                 }
             }
+
+            // Лампа в руке (акт 3): вложенный экземпляр префаба Lamp под точкой глаз, выключена до сцены с лампой (8.5).
+            var heldLamp = pivot.Find("HeldLamp");
+            if (heldLamp == null && Lamp != null)
+            {
+                var lampInstance = (GameObject)PrefabUtility.InstantiatePrefab(Lamp, pivot);
+                lampInstance.name = "HeldLamp";
+                lampInstance.transform.localPosition = new Vector3(0.3f, -0.85f, 0.3f);
+                lampInstance.transform.localRotation = Quaternion.identity;
+                lampInstance.SetActive(false);
+                heldLamp = lampInstance.transform;
+            }
+            var held = root.GetComponent<LastRide.Player.HeldLamp>();
+            if (held == null) held = root.AddComponent<LastRide.Player.HeldLamp>();
+            held.lamp = heldLamp;
+            held.rightArm = FindDeep(pivot, Anchors.FPArmRight);
 
             // Тело от 1-го лица не рисуется, но отбрасывает тень.
             foreach (var r in root.GetComponentsInChildren<Renderer>())

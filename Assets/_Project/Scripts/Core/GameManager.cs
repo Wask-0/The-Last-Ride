@@ -37,6 +37,15 @@ namespace LastRide.Core
         /// <summary>Погода: акты, шторм/затишье, порывы (ТЗ 4.6). Пишет время замерзания и множитель порыва в <see cref="Warmth"/>.</summary>
         public LastRide.Weather.WeatherSystem Weather { get; private set; }
 
+        /// <summary>Контроллер актов: текущий акт, переходы, время в актах.</summary>
+        public LastRide.Narrative.ActController Acts { get; private set; }
+
+        /// <summary>Пролог и контекстное обучение акта 1.</summary>
+        public LastRide.Narrative.TutorialController Tutorial { get; private set; }
+
+        /// <summary>Очередь аудиозаписей создателя и субтитры (ТЗ 7.1).</summary>
+        public LastRide.Narrative.AudioLogPlayer AudioLogs { get; private set; }
+
         /// <summary>Положение игрока на оси пути (расстояние, смещение, акт по положению).</summary>
         public LastRide.Level.LevelProgress Progress { get; } = new LastRide.Level.LevelProgress();
 
@@ -87,6 +96,14 @@ namespace LastRide.Core
             DebugTools.DebugOverlay.RegisterLine("Тепло", () => Warmth.ToString());
             Weather = new LastRide.Weather.WeatherSystem(Config, Balance);
             DebugTools.DebugOverlay.RegisterLine("Погода", () => Weather.ToString());
+            Acts = new LastRide.Narrative.ActController(this);
+            DebugTools.DebugOverlay.RegisterLine("Акт", () => Acts.ToString());
+            AudioLogs = new LastRide.Narrative.AudioLogPlayer(Config, Balance);
+            DebugTools.DebugOverlay.RegisterLine("Записи", () => AudioLogs.ToString());
+            Tutorial = new LastRide.Narrative.TutorialController(this);
+            DebugTools.DebugOverlay.RegisterLine("Обучение", () => Tutorial.ToString());
+            gameObject.AddComponent<LastRide.UI.SubtitleView>();
+            gameObject.AddComponent<LastRide.UI.TutorialHintView>();
             gameObject.AddComponent<LastRide.Weather.WindPusher>();
             DebugTools.DebugOverlay.RegisterLine("Путь", () => Progress.ToString());
             DebugTools.DebugOverlay.RegisterLine("Инвентарь", () => Inventory.ToString());
@@ -105,6 +122,9 @@ namespace LastRide.Core
                 Spark.Tick(Time.deltaTime);
                 Weather.Tick(Time.deltaTime, Warmth); // до Warmth.Tick: тот читает свежее время замерзания и множитель порыва
                 Progress.Tick(this);
+                Acts.Tick(Time.deltaTime);
+                AudioLogs.Tick(Time.deltaTime);
+                Tutorial.Tick(Time.deltaTime);
                 Warmth.Tick(Time.deltaTime, PlayerMode, Spark);
             }
         }

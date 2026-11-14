@@ -55,6 +55,9 @@ namespace LastRide.Vehicle
         /// <summary>Можно ли ехать (выключается при поломке в акте 3).</summary>
         public bool CanDrive { get; set; } = true;
 
+        /// <summary>Принудительное торможение, м/с² (поломка: фургон должен встать). 0 — нет.</summary>
+        public float ForcedBrakeDeceleration { get; set; }
+
         /// <summary>Множитель бокового сцепления шин (1 — норма). Порыв ветра временно снижает, чтобы боковая сила его сносила (WindPusher).</summary>
         public float GripMultiplier { get; set; } = 1f;
 
@@ -272,6 +275,7 @@ namespace LastRide.Vehicle
             else resistAccel += _cfg.coastDeceleration;
 
             if (IsHandbrake) resistAccel += _cfg.handbrakeDeceleration;
+            resistAccel += ForcedBrakeDeceleration;
             resistAccel += _cfg.airDrag * v * v;
             if (DeepSnowFraction > 0f)
             {

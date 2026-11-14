@@ -19,6 +19,9 @@ namespace LastRide.Core
         public VanCameraSettings vanCamera = new VanCameraSettings();
         public PresentationSettings presentation = new PresentationSettings();
         public SubtitleSettings subtitles = new SubtitleSettings();
+        public TutorialSettings tutorial = new TutorialSettings();
+        public BreakdownSettings breakdown = new BreakdownSettings();
+        public LampHandSettings lampHand = new LampHandSettings();
 
         [Serializable]
         public sealed class FireSettings
@@ -315,6 +318,100 @@ namespace LastRide.Core
             [Min(0.1f)] public float hudBarSpeed = 2f;
         }
 
+        /// <summary>Поломка фургона и постановочная сцена с лампой (ТЗ 3, акт 3).</summary>
+        [Serializable]
+        public sealed class BreakdownSettings
+        {
+            [Header("Остановка фургона")]
+            [Tooltip("За сколько секунд фургон встаёт после поломки.")]
+            [Min(0.5f)] public float stopSeconds = 3.5f;
+            [Tooltip("Фургон обязан встать не дальше этого расстояния (м) — до завала. Если на скорости не успевает, тормозит сильнее.")]
+            [Min(3)] public float maxStopDistance = 20f;
+            [Tooltip("Толчок камеры при лязге (0..1).")]
+            [Range(0, 1)] public float cameraTrauma = 0.8f;
+            [Header("Сцена")]
+            [Tooltip("Через сколько после лязга начинается запись A3_01, с.")]
+            [Min(0)] public float logDelaySeconds = 1.2f;
+            [Tooltip("Пауза после конца A3_01 до начала сцены с лампой, с.")]
+            [Min(0)] public float sceneDelaySeconds = 1.5f;
+            [Tooltip("Страховка: сцена начнётся не позже этого времени после лязга, с (даже если запись не закончилась).")]
+            [Min(5)] public float maxWaitSeconds = 30f;
+            [Tooltip("Сколько ждать, пока робот выйдет из фургона и камера перелетит, с.")]
+            [Min(0.2f)] public float exitSeconds = 1.0f;
+            [Tooltip("Поворот взгляда на печку фургона, с.")]
+            [Min(0.1f)] public float lookAtVanSeconds = 1.0f;
+            [Tooltip("Сколько секунд робот отходит от фургона назад, пока смотрит на печку (чтобы окно было видно не в упор).")]
+            [Min(0)] public float stepBackSeconds = 0.6f;
+            [Tooltip("Подъём лампы в руку, с. На середине Искра переходит из печки в лампу.")]
+            [Min(0.2f)] public float raiseSeconds = 1.8f;
+            [Tooltip("Пауза с поднятой лампой, с.")]
+            [Min(0)] public float holdSeconds = 0.8f;
+            [Tooltip("Поворот взгляда вдоль пути вверх по склону, с.")]
+            [Min(0.1f)] public float lookAlongPathSeconds = 1.2f;
+            [Tooltip("Подсказка после сцены.")]
+            public string hintText = "Искра в лампе. Идите вверх по склону";
+        }
+
+        /// <summary>Лампа в руке от первого лица: положения кисти в системе камеры робота и покачивание.</summary>
+        [Serializable]
+        public sealed class LampHandSettings
+        {
+            [Tooltip("Где кисть держит лампу, м (x вправо, y вверх, z вперёд от точки глаз).")]
+            public Vector3 carryHand = new Vector3(0.13f, 0.07f, 0.6f);
+            [Tooltip("Где локоть при удержании лампы: правее кисти, чтобы рука шла сбоку и не закрывала лампу.")]
+            public Vector3 carryElbow = new Vector3(0.45f, -0.25f, 0.1f);
+            [Tooltip("Где кисть до подъёма (лампа ниже кадра).")]
+            public Vector3 hiddenHand = new Vector3(0.34f, -0.85f, 0.3f);
+            [Tooltip("Лампа висит на ручке: насколько ниже кисти её низ, м.")]
+            [Min(0)] public float lampBelowHand = 0.34f;
+            [Tooltip("Длина руки от локтя до кисти, м.")]
+            [Min(0.1f)] public float armLength = 0.42f;
+            [Tooltip("Покачивание при ходьбе: вертикаль и в сторону, м.")]
+            [Min(0)] public float swayVertical = 0.02f;
+            [Min(0)] public float swaySide = 0.012f;
+            [Tooltip("Раскачивание лампы на ручке при ходьбе, градусов.")]
+            [Min(0)] public float swingDegrees = 5f;
+            [Tooltip("Шагов в секунду для покачивания.")]
+            [Min(0.1f)] public float swayStepsPerSecond = 1.6f;
+            [Header("Пламя на порывах ветра")]
+            [Tooltip("Насколько порыв приглушает свет лампы (доля яркости при силе порыва 1).")]
+            [Range(0, 1)] public float gustDimAmount = 0.55f;
+            [Tooltip("Во сколько раз быстрее мерцает свет лампы в порыве.")]
+            [Min(1)] public float gustFlickerMultiplier = 2.5f;
+            [Tooltip("Дополнительная глубина мерцания в порыве.")]
+            [Range(0, 1)] public float gustFlickerExtra = 0.3f;
+            [Tooltip("Лампу наклоняет по ветру, градусов при силе порыва 1.")]
+            [Min(0)] public float gustLampTiltDegrees = 9f;
+            [Tooltip("Сколько секунд занимает открытие панели топлива лампы (плавное появление).")]
+            [Min(0.05f)] public float panelFadeSeconds = 0.2f;
+            [Tooltip("Через сколько секунд после взятия лампы напомнить про R, с.")]
+            [Min(0)] public float rHintDelaySeconds = 9f;
+            [Tooltip("Текст подсказки про R.")]
+            public string rHintText = "R — подкинуть топливо в лампу";
+        }
+
+        [Serializable]
+        public sealed class TutorialSettings
+        {
+            [Tooltip("Щепки, которые выдаются, когда Искра поставлена в печку (чтобы было что подкинуть в обучении).")]
+            [Min(0)] public int startKindling = 3;
+            [Tooltip("Через сколько секунд после старта показать первую подсказку (управление).")]
+            [Min(0)] public float firstHintDelaySeconds = 1.5f;
+            [Tooltip("Сколько показывается обычная подсказка, с.")]
+            [Min(1)] public float hintSeconds = 6f;
+            [Tooltip("После постановки Искры в печку: через сколько напомнить про посадку в фургон, с.")]
+            [Min(0)] public float sitHintDelaySeconds = 7f;
+            [Tooltip("После первой посадки: через сколько показать подсказку про управление фургоном, с.")]
+            [Min(0)] public float drivingHintDelaySeconds = 1.5f;
+            [Tooltip("Если банку не взяли за столько секунд после первой подсказки — напомнить, где она, с.")]
+            [Min(1)] public float findJarHintDelaySeconds = 9f;
+            [Header("Вид подсказок")]
+            [Min(8)] public float hintFontSize = 30f;
+            [Tooltip("Отступ подсказки обучения от верхнего края (px эталона 1920×1080).")]
+            [Min(0)] public float hintTopOffset = 150f;
+            [Min(0.1f)] public float hintFadeSpeed = 4f;
+        }
+
         [Serializable]
         public sealed class SubtitleSettings
         {
@@ -324,6 +421,24 @@ namespace LastRide.Core
             [Min(0)] public float minLineSeconds = 2f;
             [Tooltip("Насколько приглушаются музыка и ветер во время записи, дБ.")]
             public float duckingDb = -9f;
+            [Tooltip("Пауза между записями в очереди, с.")]
+            [Min(0)] public float queueGapSeconds = 0.8f;
+            [Tooltip("Сколько держится последняя строка после конца записи, с (до начала следующей записи не ждём).")]
+            [Min(0)] public float lastLineHoldSeconds = 0.5f;
+
+            [Header("Вид субтитров (радио-эффект)")]
+            [Tooltip("Размер шрифта субтитров.")]
+            [Min(8)] public float fontSize = 36f;
+            [Tooltip("Отступ субтитров от нижнего края экрана (в пикселях эталона 1920×1080). Подсказки взаимодействия выше.")]
+            [Min(0)] public float bottomOffset = 70f;
+            [Tooltip("Сколько длится «шум» в начале каждой строки, с: буквы подменяются помехами и дрожат.")]
+            [Min(0)] public float glitchSeconds = 0.4f;
+            [Tooltip("Амплитуда дрожания в начале строки, px.")]
+            [Min(0)] public float glitchJitterPixels = 7f;
+            [Tooltip("Скорость появления/исчезновения субтитров, 1/с.")]
+            [Min(0.1f)] public float fadeSpeed = 6f;
+            [Tooltip("Слабое постоянное мерцание прозрачности «как в рации» (0 — нет).")]
+            [Range(0, 0.5f)] public float flickerAmount = 0.08f;
         }
     }
 }

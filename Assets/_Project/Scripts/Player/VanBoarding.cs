@@ -17,6 +17,9 @@ namespace LastRide.Player
         public VanController van;
         public RobotController robot;
 
+        /// <summary>Посадка и выход игроком запрещены (поломка фургона, акт 3). Робот по-прежнему выходит, если сменили режим.</summary>
+        public bool boardingLocked;
+
         private Transform _exitPoint, _doorPoint;
         private float _cooldown;
         private float _sitRequestedAt = -1f;
@@ -59,7 +62,7 @@ namespace LastRide.Player
 
             SyncSeat(gm.PlayerMode);
 
-            if (!gm.IsGameplayActive) { InteractionPrompt.Hide(this); return; }
+            if (!gm.IsGameplayActive || boardingLocked) { InteractionPrompt.Hide(this); return; }
             _cooldown -= Time.unscaledDeltaTime;
 
             if (gm.PlayerMode == PlayerMode.InVan)

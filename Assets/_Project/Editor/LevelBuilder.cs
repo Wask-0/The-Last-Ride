@@ -26,6 +26,7 @@ namespace LastRide.Editor
             var scene = EditorSceneManager.OpenScene(GameScenePath, OpenSceneMode.Single);
             var root = Populate(true);
             if (root == null) return;
+            PlayerRigBuilder.Rebuild();
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
             AssetDatabase.SaveAssets();

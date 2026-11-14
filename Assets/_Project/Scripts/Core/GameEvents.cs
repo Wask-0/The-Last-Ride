@@ -105,6 +105,22 @@ namespace LastRide.Core
 
     public struct SparkDelivered : IGameEvent { }
 
+    // ---- Аудиозаписи ----
+    /// <summary>Запись началась (Log.clip может быть пустым — тогда радиопомехи и авто-тайминг).</summary>
+    public struct AudioLogStarted : IGameEvent { public LastRide.Narrative.AudioLogData Log; }
+
+    /// <summary>Сменилась строка субтитров. Пустой Text — строки нет (между строками/после записи).</summary>
+    public struct AudioLogLineChanged : IGameEvent
+    {
+        public LastRide.Narrative.AudioLogData Log;
+        public int LineIndex;
+        public string Text;
+        public float Duration;
+    }
+
+    /// <summary>Запись закончилась (для ducking и щелчка плёнки).</summary>
+    public struct AudioLogFinished : IGameEvent { public LastRide.Narrative.AudioLogData Log; }
+
     // ---- UI ----
     /// <summary>Показать / скрыть подсказку взаимодействия. Пустой Text — скрыть.</summary>
     public struct InteractionPromptChanged : IGameEvent { public string Text; }
