@@ -12,7 +12,7 @@ namespace LastRide.Narrative
     {
         private bool _flying, _taken;
         private float _t, _duration;
-        private Vector3 _from, _homeScale;
+        private Vector3 _from, _homeScale, _homePosition;
         private Collider[] _colliders;
 
         public string PromptText => "Взять Искру";
@@ -29,7 +29,20 @@ namespace LastRide.Narrative
         private void Awake()
         {
             _homeScale = transform.localScale;
+            _homePosition = transform.position;
             _colliders = GetComponentsInChildren<Collider>(true);
+        }
+
+        /// <summary>Загрузка чекпоинта: банка снова на месте (<paramref name="taken"/> = false) или уже у робота.</summary>
+        public void SetTaken(bool taken)
+        {
+            if (_colliders == null) Awake();
+            _taken = taken;
+            _flying = false;
+            transform.localScale = _homeScale;
+            if (!taken) transform.position = _homePosition;
+            foreach (var c in _colliders) if (c != null) c.enabled = !taken;
+            gameObject.SetActive(!taken);
         }
 
         public void Interact(Interactor who)

@@ -73,6 +73,26 @@ namespace LastRide.Narrative
             _controlsAt = _findJarAt = _sitAt = _drivingAt = -1f;
         }
 
+        /// <summary>Загрузка чекпоинта (ТЗ 4.7): состояние пролога, показанные подсказки; таймеры подсказок заново.</summary>
+        public void Restore(PrologueState state, IEnumerable<string> shown, bool firstThrowDone)
+        {
+            _shown.Clear();
+            MarkShown(shown);
+            _stoveOpened = false;
+            _firstThrowDone = firstThrowDone;
+            _lampHintAt = -1f;
+            _clock = 0f;
+            State = state;
+            _begun = true;
+            _controlsAt = _findJarAt = _sitAt = _drivingAt = -1f;
+            if (state == PrologueState.FindJar)
+            {
+                _controlsAt = Cfg.firstHintDelaySeconds;
+                _findJarAt = _controlsAt + Cfg.hintSeconds + Cfg.findJarHintDelaySeconds;
+            }
+            Hide();
+        }
+
         // ------------------------------------------------------------------ пролог
 
         public void TakeJar()

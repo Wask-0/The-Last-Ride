@@ -46,6 +46,18 @@ namespace LastRide.Core
         /// <summary>Очередь аудиозаписей создателя и субтитры (ТЗ 7.1).</summary>
         public LastRide.Narrative.AudioLogPlayer AudioLogs { get; private set; }
 
+        /// <summary>Чекпоинты и автосохранение (ТЗ 4.7, 6.3).</summary>
+        public LastRide.Save.CheckpointSystem Checkpoints { get; private set; }
+
+        /// <summary>Смерть и рестарт с чекпоинта (ТЗ 4.7).</summary>
+        public LastRide.Save.DeathDirector Death { get; private set; }
+
+        /// <summary>Переходы между сценами меню и игры (11.3).</summary>
+        public SceneFlow Flow { get; private set; }
+
+        /// <summary>Затемнение между сценами.</summary>
+        public LastRide.UI.ScreenFader Fader { get; private set; }
+
         /// <summary>Положение игрока на оси пути (расстояние, смещение, акт по положению).</summary>
         public LastRide.Level.LevelProgress Progress { get; } = new LastRide.Level.LevelProgress();
 
@@ -102,7 +114,15 @@ namespace LastRide.Core
             DebugTools.DebugOverlay.RegisterLine("Записи", () => AudioLogs.ToString());
             Tutorial = new LastRide.Narrative.TutorialController(this);
             DebugTools.DebugOverlay.RegisterLine("Обучение", () => Tutorial.ToString());
+            Checkpoints = new LastRide.Save.CheckpointSystem(this);
+            DebugTools.DebugOverlay.RegisterLine("Чекпоинт", () => Checkpoints.LastId ?? "нет");
+            Death = gameObject.AddComponent<LastRide.Save.DeathDirector>();
+            Flow = gameObject.AddComponent<SceneFlow>();
+            Fader = gameObject.AddComponent<LastRide.UI.ScreenFader>();
+            LastRide.UI.UiKit.EnsureEventSystem(transform);
             gameObject.AddComponent<LastRide.UI.SubtitleView>();
+            gameObject.AddComponent<LastRide.UI.SettingsView>();
+            gameObject.AddComponent<LastRide.UI.PauseMenuView>();
             gameObject.AddComponent<LastRide.UI.TutorialHintView>();
             gameObject.AddComponent<LastRide.Weather.WindPusher>();
             gameObject.AddComponent<LastRide.Weather.SnowfallView>();
@@ -121,6 +141,9 @@ namespace LastRide.Core
 
         private void Update()
         {
+            // Esc в игре — пауза (обратно из паузы ведёт PauseMenuView: он же закрывает вложенные окна).
+            if (State == GameState.Playing && GameInput.PausePressed && (Flow == null || !Flow.Busy)) RequestState(GameState.Paused);
+
             // Огонь горит всегда, пока идёт игра — и в фургоне, и пока робот снаружи. На паузе timeScale = 0.
             if (State == GameState.Playing)
             {
@@ -186,6 +209,29 @@ namespace LastRide.Core
         {
             PlayerMode = mode;
             GameInput.ApplyContext(State, PlayerMode);
+        }
+
+        /// <summary>
+        /// Чистое состояние всех систем: новая игра и выход в меню. Не трогает файл сохранения.
+        /// Сцена Game после этого начинает пролог (<c>PrologueStart</c>) или применяет чекпоинт «Продолжить».
+        /// </summary>
+        public void ResetForNewGame()
+        {
+            if (Death != null) Death.Cancel();
+            Inventory.Clear();
+            Spark.Reset();
+            Spark.Invulnerable = false;
+            Warmth.Reset();
+            Warmth.Invulnerable = false;
+            AudioLogs.ResetPlayback();
+            AudioLogs.ClearPlayed();
+            LastRide.Level.LevelTrigger.ClearFired();
+            LastRide.Fire.PickupRegistry.Reset();
+            Acts.Restore(ActId.Act1);
+            Checkpoints.Clear();
+            DebugTimeMultiplier = 1f;
+            PlayerMode = PlayerMode.OnFoot;
+            if (Config != null && Config.defaultDifficulty != null) Difficulty = Config.defaultDifficulty;
         }
 
         public bool IsGameplayActive => State == GameState.Playing;

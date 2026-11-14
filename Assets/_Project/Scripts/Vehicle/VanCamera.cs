@@ -98,8 +98,9 @@ namespace LastRide.Vehicle
             Vector2 look = orbiting ? Vector2.ClampMagnitude(GameInput.Look, MaxLookDeltaPerFrame) : Vector2.zero;
             if (orbiting)
             {
-                _orbitYaw += look.x * s.orbitSensitivity;
-                _orbitPitch = Mathf.Clamp(_orbitPitch - look.y * s.orbitSensitivity, s.orbitPitchRange.x, s.orbitPitchRange.y);
+                float orbitK = s.orbitSensitivity * LastRide.Save.GameSettings.MouseSensitivity;
+                _orbitYaw += look.x * orbitK;
+                _orbitPitch = Mathf.Clamp(_orbitPitch + (LastRide.Save.GameSettings.InvertY ? look.y : -look.y) * orbitK, s.orbitPitchRange.x, s.orbitPitchRange.y);
                 _idleTime = 0f;
             }
             else

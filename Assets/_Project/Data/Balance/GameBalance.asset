@@ -225,3 +225,83 @@ MonoBehaviour:
     blurEndDistance: {x: 120, y: 8}
     blurMaxRadius: 1.6
     coldSmoothing: 3
+  frost:
+    coldStrength: 0.9
+    weatherStrength: 1
+    growSpeed: 0.5
+    meltSpeed: 0.35
+    deathFillSeconds: 1.5
+    meltSeconds: 1.2
+  death:
+    holdFullFrostSeconds: 0.35
+    restoreHoldSeconds: 0.6
+    restoreWarmth: 100
+  menu:
+    fadeOutSeconds: 0.7
+    fadeInSeconds: 1.3
+    cameraOrbitDegreesPerSecond: 3.5
+    cameraRadius: {x: 9, y: 13}
+    cameraHeight: {x: 1.5, y: 3.2}
+    cameraBreathSeconds: 40
+    lookSideOffset: 2.6
+    buttonFontSize: 36
+  audio:
+    masterDb: 0
+    musicDb: -4
+    sfxDb: 0
+    ambienceDb: -3
+    voiceDb: 0
+    limiterCeiling: 0.95
+    limiterThreshold: 0.7
+    layerThreshold: 0.8
+    sfxPoolSize: 12
+    windGain: 0.55
+    fireGain: 0.5
+    mechanismGain: 0.4
+    engineGain: 0.5
+    windFullAt: 12
+    windFloor: 0.12
+    windInVanGain: 0.6
+    windInVanCutoff: 450
+    crackleRateMax: 14
+    stoveHearRange: 22
+    lampHandGain: 0.55
+    mechanismInVanGain: 0.45
+    creakGain: 0.5
+    engineIdleHz: 34
+    engineMaxHz: 88
+    engineRevUp: 45
+    engineRevDown: 14
+    wheelNoiseGain: 0.5
+    footstepGain: 0.5
+    interactGain: 0.7
+    vanGain: 0.9
+    radioGain: 0.6
+    radioStaticGain: 0.12
+    voiceClipGain: 1
+    pitchJitter: 0.06
+    embersAlarmInterval: {x: 1.4, y: 0.55}
+    musicGain: 0.55
+    musicMoodSpeed: 0.12
+    chordSeconds: {x: 9, y: 14, z: 16}
+    act1Pad: 0.55
+    act1Melody: 0.6
+    act2Pad: 0.16
+    act2DissonanceCalm: 0.3
+    act2DissonanceStorm: 0.9
+    act2Drone: 0.25
+    act3Drone: 0.3
+    act3PadAtSummit: 0.28
+    act3MelodyAtSummit: 0.5
+    codaPad: 0.6
+    codaMelody: 0.8
+    tensionSqueeze: 0.75
+    tensionDrone: 0.35
+    beaconGain: 0.5
+    beaconStartProgress: 0.45
+    beaconSummitLevel: 0.55
+    beaconFinaleRise: 20
+    duckDb: -9
+    duckAmbienceDb: -6
+    duckAttack: 0.25
+    duckRelease: 0.8

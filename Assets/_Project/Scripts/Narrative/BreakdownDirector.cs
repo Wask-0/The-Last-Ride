@@ -73,6 +73,26 @@ namespace LastRide.Narrative
             }
         }
 
+        /// <summary>
+        /// Загрузка чекпоинта: оборвать идущую сцену и выставить итог — поломка была (<paramref name="done"/>: фургон не едет,
+        /// сесть нельзя) или нет (фургон на ходу, сесть можно).
+        /// </summary>
+        public void Restore(bool done)
+        {
+            var gm = GameManager.Instance;
+            if (_running)
+            {
+                StopAllCoroutines();
+                if (gm != null) gm.Warmth.Invulnerable = false;
+                if (robot != null) { robot.MoveOverride = null; robot.mouseLookEnabled = true; }
+            }
+            _running = false;
+            _pending = false;
+            Done = done;
+            if (van != null) { van.ForcedBrakeDeceleration = 0f; van.CanDrive = !done; }
+            if (boarding != null) boarding.boardingLocked = done;
+        }
+
         /// <summary>Запустить сцену вручную (отладка/тесты), минуя триггер.</summary>
         public void Trigger() { if (!Done && !_running) _pending = true; }
 

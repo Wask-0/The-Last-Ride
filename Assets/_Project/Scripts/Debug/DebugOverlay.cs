@@ -2,13 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using LastRide.Core;
+using LastRide.Level;
+using LastRide.Player;
+using LastRide.Vehicle;
 using UnityEngine;
 
 namespace LastRide.DebugTools
 {
     /// <summary>
     /// Отладочные инструменты (ТЗ 10), только в Editor / Development build.
-    /// F1 — оверлей, F5 — ускорение времени ×4. F2–F4 добавятся вместе с нужными системами.
+    /// F1 — оверлей, F2 — телепорт к следующему чекпоинту (или поломке фургона), F3 — +10 каждого топлива,
+    /// F4 — бессмертие (тепло и Искра не падают), F5 — ускорение времени ×4.
     /// Системы добавляют свои строки в оверлей через <see cref="RegisterLine"/>.
     /// </summary>
     public sealed class DebugOverlay : MonoBehaviour
@@ -63,11 +67,92 @@ namespace LastRide.DebugTools
 
             if (GameInput.DebugOverlayPressed) OverlayVisible = !OverlayVisible;
 
+            var game = GameManager.Instance;
+            if (game != null && game.IsGameplayActive)
+            {
+                if (GameInput.DebugNextCheckpointPressed) TeleportToNextCheckpoint(game);
+                if (GameInput.DebugAddFuelPressed) AddFuel(game);
+                if (GameInput.DebugGodModePressed) ToggleGodMode(game);
+            }
+
             if (GameInput.DebugTimeScalePressed && GameManager.Instance != null)
             {
                 var gm = GameManager.Instance;
                 gm.DebugTimeMultiplier = gm.DebugTimeMultiplier > 1.01f ? 1f : FastTimeMultiplier;
             }
+        }
+
+        // ------------------------------------------------------------------ F2–F4
+
+        private static bool GodMode(GameManager gm) => gm.Warmth.Invulnerable && gm.Spark.Invulnerable;
+
+        private static void ToggleGodMode(GameManager gm)
+        {
+            bool on = !GodMode(gm);
+            gm.Warmth.Invulnerable = on;
+            gm.Spark.Invulnerable = on;
+            Debug.Log("[Debug] Бессмертие: " + (on ? "вкл" : "выкл"));
+        }
+
+        private static void AddFuel(GameManager gm)
+        {
+            if (gm.Config == null) return;
+            foreach (var f in gm.Config.fuelTypes) if (f != null) gm.Inventory.Add(f, 10);
+        }
+
+        /// <summary>
+        /// F2: к ближайшему впереди чекпоинту (или зоне поломки фургона — без неё акт 3 не начать). По дороге срабатывают
+        /// пропущенные начала актов, чтобы погода и акт соответствовали месту; затем срабатывает сама зона (сохранение чекпоинта).
+        /// </summary>
+        private static void TeleportToNextCheckpoint(GameManager gm)
+        {
+            var path = RoadPath.Load();
+            if (path == null) return;
+            float here = gm.Progress.Distance;
+            LevelTrigger target = null;
+            foreach (var t in LevelTrigger.All)
+            {
+                if (t == null || (t.kind != LevelTriggerKind.Checkpoint && t.kind != LevelTriggerKind.Breakdown)) continue;
+                if (t.distance > here + 3f) { target = t; break; } // All отсортирован по расстоянию
+            }
+            if (target == null) { Debug.Log("[Debug] F2: впереди больше нет чекпоинтов."); return; }
+
+            // Акт 3 начинается сценой поломки фургона — перепрыгнуть её нельзя.
+            var breakdown = UnityEngine.Object.FindAnyObjectByType<LastRide.Narrative.BreakdownDirector>();
+            if (breakdown != null && breakdown.Running) { Debug.Log("[Debug] F2: идёт сцена поломки."); return; }
+            if (breakdown != null && !breakdown.Done && target.kind != LevelTriggerKind.Breakdown)
+            {
+                foreach (var t in LevelTrigger.All)
+                    if (t != null && t.kind == LevelTriggerKind.Breakdown && t.distance < target.distance) { target = t; break; }
+            }
+
+            foreach (var t in LevelTrigger.All)
+                if (t != null && t.kind == LevelTriggerKind.ActStart && t.distance <= target.distance && !LevelTrigger.HasFired(t.id)) t.Fire();
+
+            var s = path.Evaluate(target.distance);
+            Vector3 right = Vector3.Cross(Vector3.up, s.flatTangent).normalized;
+            var van = UnityEngine.Object.FindAnyObjectByType<VanController>();
+            var robot = RobotController.Active;
+            bool onFoot = gm.PlayerMode != PlayerMode.InVan;
+
+            if (van != null && !(gm.PlayerMode == PlayerMode.OnFootWithLamp))
+                van.ResetTo(s.position + Vector3.up * 0.6f, Quaternion.LookRotation(s.flatTangent, Vector3.up));
+            if (robot != null && onFoot)
+            {
+                float yaw = Mathf.Atan2(s.flatTangent.x, s.flatTangent.z) * Mathf.Rad2Deg;
+                robot.Teleport(s.position + right * 2.4f + Vector3.up * 0.8f, yaw);
+            }
+            if (VanCamera.Active != null) VanCamera.Active.Snap();
+            gm.Progress.ResetHint();
+            gm.Progress.Tick(gm);
+
+            if (target.kind == LevelTriggerKind.Breakdown && breakdown != null && !breakdown.Done)
+            {
+                gm.SetPlayerMode(PlayerMode.InVan); // сцена начинается, когда игрок в фургоне
+                if (!target.Fire()) breakdown.Trigger(); // зона уже срабатывала — запустить сцену вручную
+            }
+            else target.Fire();
+            Debug.Log($"[Debug] F2 → {target.id} ({target.distance:0} м)");
         }
 
         private void OnGUI()
@@ -83,6 +168,7 @@ namespace LastRide.DebugTools
                 _sb.Append("Состояние: ").Append(gm.State).Append('\n');
                 _sb.Append("Режим: ").Append(gm.PlayerMode).Append('\n');
                 _sb.Append("Время: ×").Append(gm.DebugTimeMultiplier.ToString("0.#")).Append('\n');
+                if (GodMode(gm)) _sb.Append("БЕССМЕРТИЕ: вкл\n");
                 if (gm.Difficulty != null) _sb.Append("Сложность: ").Append(gm.Difficulty.displayName).Append('\n');
             }
 
@@ -93,7 +179,7 @@ namespace LastRide.DebugTools
                 catch (Exception e) { v = "<" + e.GetType().Name + ">"; }
                 _sb.Append(line.Key).Append(": ").Append(v).Append('\n');
             }
-            _sb.Append("\nF1 — оверлей   F5 — время ×4");
+            _sb.Append("\nF1 — оверлей   F2 — след. чекпоинт   F3 — +10 топлива   F4 — бессмертие   F5 — время ×4");
 
             var content = new GUIContent(_sb.ToString());
             var size = _style.CalcSize(content);

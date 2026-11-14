@@ -26,6 +26,8 @@ namespace LastRide.Core
         public AtmosphereSettings atmosphere = new AtmosphereSettings();
         public PostFxSettings postFx = new PostFxSettings();
         public FrostSettings frost = new FrostSettings();
+        public DeathSettings death = new DeathSettings();
+        public MenuSettings menu = new MenuSettings();
         public AudioSettingsData audio = new AudioSettingsData();
 
         /// <summary>Аудиоядро (этап 10.1): громкости шин, лимитер, пул SFX, ducking.</summary>
@@ -154,6 +156,40 @@ namespace LastRide.Core
             [Min(0.05f)] public float deathFillSeconds = 1.5f;
             [Tooltip("За сколько секунд заполнение тает после восстановления.")]
             [Min(0.05f)] public float meltSeconds = 1.2f;
+        }
+
+        /// <summary>Смерть и восстановление с чекпоинта (этап 11.2). Сам фейд в иней — <see cref="FrostSettings.deathFillSeconds"/>.</summary>
+        [Serializable]
+        public sealed class DeathSettings
+        {
+            [Tooltip("Сколько секунд держится полный иней после заполнения экрана, до восстановления.")]
+            [Min(0)] public float holdFullFrostSeconds = 0.35f;
+            [Tooltip("Сколько секунд после восстановления игра стоит в состоянии Restoring (иней тает), прежде чем вернуть управление.")]
+            [Min(0)] public float restoreHoldSeconds = 0.6f;
+            [Tooltip("Тепло после восстановления с чекпоинта, 0..max (защита от тупика, ТЗ 4.7: полное).")]
+            [Min(0)] public float restoreWarmth = 100f;
+        }
+
+        /// <summary>Главное меню и переходы между сценами (этап 11.3).</summary>
+        [Serializable]
+        public sealed class MenuSettings
+        {
+            [Tooltip("Затемнение перед загрузкой сцены, с.")]
+            [Min(0.05f)] public float fadeOutSeconds = 0.7f;
+            [Tooltip("Проявление новой сцены, с.")]
+            [Min(0.05f)] public float fadeInSeconds = 1.3f;
+            [Tooltip("Скорость облёта камеры вокруг Искры, градусов в секунду.")]
+            public float cameraOrbitDegreesPerSecond = 3.5f;
+            [Tooltip("Радиус облёта: минимум и максимум (плавно дышит), м.")]
+            public Vector2 cameraRadius = new Vector2(9f, 13f);
+            [Tooltip("Высота камеры над землёй: минимум и максимум, м.")]
+            public Vector2 cameraHeight = new Vector2(1.5f, 3.2f);
+            [Tooltip("Период «дыхания» радиуса и высоты, с.")]
+            [Min(1f)] public float cameraBreathSeconds = 40f;
+            [Tooltip("Сдвиг точки взгляда вбок, м (Искра смещается вправо от центра, меню слева).")]
+            public float lookSideOffset = 2.6f;
+            [Tooltip("Размер шрифта кнопок меню.")]
+            [Min(10f)] public float buttonFontSize = 36f;
         }
 
         /// <summary>Пост-обработка (этап 9.3): общие параметры и реакция на холод. Значения по актам — в <see cref="ActLighting"/>.</summary>

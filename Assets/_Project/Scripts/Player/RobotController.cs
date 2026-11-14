@@ -208,9 +208,9 @@ namespace LastRide.Player
         private void Look(bool active)
         {
             if (!active || !mouseLookEnabled) { ApplyRotation(); return; }
-            Vector2 look = Vector2.ClampMagnitude(GameInput.Look, maxLookDeltaPerFrame) * Move.mouseSensitivity;
+            Vector2 look = Vector2.ClampMagnitude(GameInput.Look, maxLookDeltaPerFrame) * Move.mouseSensitivity * LastRide.Save.GameSettings.MouseSensitivity;
             _yaw += look.x;
-            _pitch = Mathf.Clamp(_pitch + (invertY ? look.y : -look.y), pitchLimits.x, pitchLimits.y);
+            _pitch = Mathf.Clamp(_pitch + ((invertY ^ LastRide.Save.GameSettings.InvertY) ? look.y : -look.y), pitchLimits.x, pitchLimits.y);
             ApplyRotation();
         }
 
