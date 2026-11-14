@@ -37,6 +37,9 @@ namespace LastRide.Core
         /// <summary>Погода: акты, шторм/затишье, порывы (ТЗ 4.6). Пишет время замерзания и множитель порыва в <see cref="Warmth"/>.</summary>
         public LastRide.Weather.WeatherSystem Weather { get; private set; }
 
+        /// <summary>Положение игрока на оси пути (расстояние, смещение, акт по положению).</summary>
+        public LastRide.Level.LevelProgress Progress { get; } = new LastRide.Level.LevelProgress();
+
         /// <summary>Множитель скорости времени для отладки (F5). На паузе время всё равно стоит.</summary>
         public float DebugTimeMultiplier
         {
@@ -85,6 +88,7 @@ namespace LastRide.Core
             Weather = new LastRide.Weather.WeatherSystem(Config, Balance);
             DebugTools.DebugOverlay.RegisterLine("Погода", () => Weather.ToString());
             gameObject.AddComponent<LastRide.Weather.WindPusher>();
+            DebugTools.DebugOverlay.RegisterLine("Путь", () => Progress.ToString());
             DebugTools.DebugOverlay.RegisterLine("Инвентарь", () => Inventory.ToString());
             DebugTools.DebugOverlay.RegisterLine("Огонь", () => Spark.ToString());
 
@@ -100,6 +104,7 @@ namespace LastRide.Core
             {
                 Spark.Tick(Time.deltaTime);
                 Weather.Tick(Time.deltaTime, Warmth); // до Warmth.Tick: тот читает свежее время замерзания и множитель порыва
+                Progress.Tick(this);
                 Warmth.Tick(Time.deltaTime, PlayerMode, Spark);
             }
         }

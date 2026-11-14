@@ -117,3 +117,7 @@ InitTestScene*.unity*
 .claude/settings.local.json
 /[Aa]ssets/[Ss]creenshots/
 /[Aa]ssets/[Ss]creenshots.meta
+
+# Рельеф уровня (7.2) пересобирается меню The Last Ride/Level/Build Terrain
+/Assets/_Project/Generated/Terrain/
+/Assets/_Project/Generated/Terrain.meta

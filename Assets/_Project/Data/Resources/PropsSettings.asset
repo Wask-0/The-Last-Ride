@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 372412266b47c034791013d8def3d7cf, type: 3}
+  m_Name: PropsSettings
+  m_EditorClassIdentifier: LastRide::LastRide.Level.PropsSettings
+  seed: 11
+  step: 5
+  acts:
+  - treeGroups: 0.35
+    rocks: 0.5
+    bigRocks: 0.12
+    farTreeGroups: 0.5
+    farRocks: 0.2
+  - treeGroups: 0.12
+    rocks: 0.8
+    bigRocks: 0.3
+    farTreeGroups: 0.15
+    farRocks: 0.4
+  - treeGroups: 0
+    rocks: 0.7
+    bigRocks: 0.4
+    farTreeGroups: 0
+    farRocks: 0.5
+  nearDepth: 28
+  farRange: {x: 28, y: 95}
+  roadClearance: 1.2
+  treeMaxSlopeDeg: 32
+  bigRockMaxSlopeDeg: 55
+  clearingAlong: 35
+  clearingAcross: 28
+  clearingMarkers:
+  - Start
+  - Stop_A1_1
+  - Stop_A1_2
+  - Stop_A2_1
+  - Stop_A2_2
+  - Stop_A2_3
+  - Stop_A2_4
+  - Summit
+  poles: 1
+  polesFromMarker: Start
+  polesFromOffset: 30
+  polesToMarker: Stop_A1_2
+  polesToOffset: 60
+  polesSpacing: 36
+  polesSide: -3.5
+  leaningShare: 0.15

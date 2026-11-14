@@ -375,7 +375,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: LastRide::LastRide.Player.RobotController
   cameraPivot: {fileID: 6549890212924864022}
   cinemachineCamera: {fileID: 1104434042668336506}
-  warmth: 100
   pitchLimits: {x: -80, y: 80}
   invertY: 0
   maxLookDeltaPerFrame: 250
@@ -387,6 +386,9 @@ MonoBehaviour:
   bobVertical: 0.035
   bobSide: 0.02
   bobRollDegrees: 0.5
+  jamKickDrop: 0.05
+  jamKickPitch: 1.6
+  jamKickDecay: 7
 --- !u!114 &6271322328580169741
 MonoBehaviour:
   m_ObjectHideFlags: 0

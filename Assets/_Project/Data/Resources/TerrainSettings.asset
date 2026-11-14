@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba28794a40ece0d4d9324363b84532db, type: 3}
+  m_Name: TerrainSettings
+  m_EditorClassIdentifier: LastRide::LastRide.Level.TerrainSettings
+  shoulderWidth: 1.5
+  roadSink: 0.35
+  roadLift: 0.03
+  roadStep: 1
+  roadChunkLength: 250
+  wallOffset: 0.8
+  trailWallOffset: 3
+  wallThickness: 1
+  wallHeight: 3
+  wallStep: 2
+  bermHeight: 1
+  bermWidth: 1.6
+  nearChunkSize: 64
+  nearSpacing: 2
+  nearBand: 110
+  farChunkSize: 256
+  farSpacing: 8
+  farBand: 600
+  farSink: 0.8
+  mountainRise: 80
+  mountainSlopeMin: 0.3
+  mountainSlopeMax: 1
+  cliffDepth: 40
+  cliffSlopeMin: 0.25
+  cliffSlopeMax: 1
+  biasWindow: 150
+  biasGain: 1.2
+  noiseAmplitude: 2.5
+  noiseScale: 25
+  ridgeAmplitude: 8
+  ridgeScale: 90
+  noiseFadeDistance: 15
+  seed: 7
+  summitPlateauRadius: 40
+  summitBlendRadius: 90
