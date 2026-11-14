@@ -67,6 +67,9 @@ namespace LastRide.Core
     /// <summary>Тепло пересекло критический порог (вниз — Entered=true, вверх — false).</summary>
     public struct WarmthCritical : IGameEvent { public bool Entered; }
 
+    /// <summary>Заводной механизм «заел» (тепло ниже порога): на Duration секунд робот встал. Для скрипа (10.3).</summary>
+    public struct MechanismJammed : IGameEvent { public float Duration; }
+
     /// <summary>Тепло достигло 0 — робот начинает застывать.</summary>
     public struct PlayerFreezing : IGameEvent { }
 

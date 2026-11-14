@@ -140,6 +140,12 @@ namespace LastRide.Vehicle
             float maxSpeed = gm != null && gm.Balance != null ? gm.Balance.van.maxSpeed : 14f;
             float speed01 = Mathf.Clamp01(van.Speed / Mathf.Max(0.1f, maxSpeed));
             float shakeAngle = s.rumbleAtMaxSpeed * speed01 + s.maxShakeAngle * _trauma * _trauma;
+            // Погода: фоновая тряска в шторме и удар порыва — фазу видно и без HUD (ТЗ 3, акт 2).
+            if (gm != null && gm.Weather != null && gm.Balance != null)
+            {
+                var c = gm.Balance.weather;
+                shakeAngle += c.vanCameraStormRumbleDeg * gm.Weather.StormMix + c.vanCameraGustRumbleDeg * gm.Weather.GustStrength01 * gm.Weather.GustPower;
+            }
             _trauma = Mathf.Max(0f, _trauma - s.traumaDecay * dt);
             float t = Time.unscaledTime * s.shakeFrequency;
             var shake = Quaternion.Euler(

@@ -55,6 +55,9 @@ namespace LastRide.Vehicle
         /// <summary>Можно ли ехать (выключается при поломке в акте 3).</summary>
         public bool CanDrive { get; set; } = true;
 
+        /// <summary>Множитель бокового сцепления шин (1 — норма). Порыв ветра временно снижает, чтобы боковая сила его сносила (WindPusher).</summary>
+        public float GripMultiplier { get; set; } = 1f;
+
         /// <summary>Ввод вместо игрока (тесты, постановочные сцены). null — читать <see cref="GameInput"/>.</summary>
         public Vector2? InputOverride { get; set; }
         public bool? HandbrakeOverride { get; set; }
@@ -297,7 +300,7 @@ namespace LastRide.Vehicle
 
                 bool onIce = w.surface == SurfaceType.Ice;
                 float surfaceMul = onIce ? _cfg.iceGripMultiplier : 1f;
-                float latMu = _cfg.lateralGrip * surfaceMul
+                float latMu = _cfg.lateralGrip * surfaceMul * GripMultiplier
                               * (IsHandbrake && !w.front ? _cfg.handbrakeRearGrip : 1f)
                               * (onIce && !w.front ? _cfg.iceRearGripBias : 1f);
 

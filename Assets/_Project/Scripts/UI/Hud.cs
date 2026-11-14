@@ -10,17 +10,12 @@ namespace LastRide.UI
     /// <summary>
     /// Минимальный HUD (ТЗ 6.1): в левом верхнем углу, полупрозрачный, без рамок.
     /// Значок пламени + тонкая шкала — запас Искры (печка или лампа); значок шестерёнки + шкала — тепло робота;
-    /// маленький флажок-индикатор ветра (виден, только если <see cref="ShowWind"/>: акт 2). Шкалы мигают красным ниже
+    /// маленький флажок-индикатор ветра (виден в акте 2, берёт <c>GameManager.Weather</c>: обвис — затишье, рвётся — шторм/порыв). Шкалы мигают красным ниже
     /// <c>presentation.hudCriticalFraction</c>; при тлеющей Искре пламя мигает чаще. Значки рисуются кодом (процедурные спрайты).
     /// Подсказки взаимодействия и панель печки — отдельные канвасы (<see cref="InteractionPromptView"/>, <see cref="StovePanel"/>).
     /// </summary>
     public sealed class Hud : MonoBehaviour
     {
-        /// <summary>Показывать флажок ветра (включает погода/акт 2, этап 6).</summary>
-        public static bool ShowWind;
-        /// <summary>Сила ветра 0 (обвис — затишье) … 1 (рвётся — шторм). Пишет погода (этап 6).</summary>
-        public static float WindStrength;
-
         private const float BarWidth = 190f;
         private const float BarHeight = 7f;
         private const int FlagStrips = 6;
@@ -76,8 +71,7 @@ namespace LastRide.UI
             SetAlpha(_flameIcon, flameCritical ? 0.4f + 0.6f * flameBlink : 1f, spark.State == SparkState.Unlit ? 0.25f : 1f);
 
             // --- Тепло ---
-            var robot = RobotController.Active;
-            float warmth = robot != null ? Mathf.Clamp01(robot.warmth / 100f) : 1f;
+            float warmth = gm.Warmth.Fraction;
             _gearShown = Mathf.MoveTowards(_gearShown, warmth, step);
             bool gearCritical = warmth < p.hudCriticalFraction;
             float gearBlink = gearCritical ? Blink(p.hudBlinkHz) : 1f;
@@ -89,8 +83,9 @@ namespace LastRide.UI
             _gearIcon.rectTransform.localRotation = Quaternion.Euler(0f, 0f, -Time.unscaledTime * 20f * warmth);
 
             // --- Ветер ---
-            _windRoot.gameObject.SetActive(ShowWind);
-            if (ShowWind) AnimateFlag(Mathf.Clamp01(WindStrength));
+            bool showWind = gm.Weather != null && gm.Weather.WindIndicatorVisible;
+            _windRoot.gameObject.SetActive(showWind);
+            if (showWind) AnimateFlag(gm.Weather.WindIndicator01);
         }
 
         private static float Blink(float hz) => 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * hz * Mathf.PI * 2f);

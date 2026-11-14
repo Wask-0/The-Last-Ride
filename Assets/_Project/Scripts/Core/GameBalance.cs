@@ -15,6 +15,7 @@ namespace LastRide.Core
         public SparkVisualSettings sparkVisual = new SparkVisualSettings();
         public VanSettings van = new VanSettings();
         public GustSettings gusts = new GustSettings();
+        public WeatherSettings weather = new WeatherSettings();
         public VanCameraSettings vanCamera = new VanCameraSettings();
         public PresentationSettings presentation = new PresentationSettings();
         public SubtitleSettings subtitles = new SubtitleSettings();
@@ -40,10 +41,20 @@ namespace LastRide.Core
             [Min(1)] public float max = 100f;
             [Tooltip("За сколько секунд тепло восстанавливается от 0 до max в фургоне при горящей печке.")]
             [Min(0.1f)] public float vanRecoverSeconds = 8f;
+            [Tooltip("Время от полного тепла до 0 снаружи по умолчанию (акт 1), с. Погода/акт переопределяют (ТЗ 4.3).")]
+            [Min(0.1f)] public float defaultFreezeSeconds = 90f;
+            [Tooltip("Акт 3: время замерзания с погасшей лампой, с (по умолчанию; акт может переопределить).")]
+            [Min(0.1f)] public float lampOutFreezeSeconds = 20f;
             [Tooltip("За сколько секунд робот застывает после того, как тепло дошло до 0.")]
             [Min(0.1f)] public float freezeToStopSeconds = 3f;
             [Tooltip("Доля шкалы, ниже которой HUD мигает.")]
             [Range(0, 1)] public float criticalFraction = 0.2f;
+            [Tooltip("Заводной механизм: тиков в секунду при полном тепле (для звука 10.3; темп падает с холодом).")]
+            [Min(0.1f)] public float tickRateWarm = 2.5f;
+            [Tooltip("Тиков в секунду при тепле 0.")]
+            [Min(0.1f)] public float tickRateCold = 0.8f;
+            [Tooltip("Множитель тона тиканья при тепле 0 (при полном тепле — 1).")]
+            [Range(0.1f, 1)] public float tickPitchCold = 0.6f;
             [Tooltip("Ниже этого значения тепла начинаются «заедания» механизма.")]
             [Min(0)] public float jamThreshold = 30f;
             [Tooltip("Длительность одного заедания, с.")]
@@ -241,6 +252,44 @@ namespace LastRide.Core
             public Vector2 duration = new Vector2(1.5f, 3f);
             [Tooltip("Во сколько раз порыв ускоряет потерю тепла.")]
             [Min(1)] public float warmthLossMultiplier = 2f;
+            [Tooltip("Сила толчка фургона на пике порыва, Н (масса фургона 1200 кг).")]
+            [Min(0)] public float vanForce = 3500f;
+            [Tooltip("Насколько порыв снижает боковое сцепление шин на пике (0.7 — до 30% от обычного): иначе сцепление гасит любую силу ветра.")]
+            [Range(0, 0.95f)] public float vanGripLoss = 0.7f;
+            [Tooltip("Снос робота на пике порыва, м/с.")]
+            [Min(0)] public float robotPush = 2.5f;
+            [Tooltip("Ветер, при котором порыв даёт полную силу, м/с (слабее ветер — слабее порыв, но не меньше 0.4×, не больше 1.5×).")]
+            [Min(1)] public float referenceWind = 12f;
+            [Tooltip("Нарастание порыва до пика, с.")]
+            [Min(0.05f)] public float attackSeconds = 0.35f;
+            [Tooltip("Спад порыва, с.")]
+            [Min(0.05f)] public float releaseSeconds = 0.6f;
+            [Tooltip("Разброс направления порыва относительно ветра, градусов (±).")]
+            [Range(0, 90)] public float directionJitterDeg = 15f;
+        }
+
+        [Serializable]
+        public sealed class WeatherSettings
+        {
+            [Tooltip("Акт 2 начинается со шторма (ТЗ: «начинается сильная пурга»); иначе — с затишья.")]
+            public bool stormCycleStartsWithStorm = true;
+            [Tooltip("Плавный бленд параметров при смене фазы шторм ↔ затишье, с.")]
+            [Min(0.1f)] public float phaseBlendSeconds = 4f;
+            [Header("Диегетические сигналы (камера, раскачивание) — игрок читает фазу без HUD")]
+            [Tooltip("Фоновая тряска камеры фургона в шторме (при «штормистости» 1), градусов.")]
+            [Min(0)] public float vanCameraStormRumbleDeg = 0.35f;
+            [Tooltip("Тряска камеры фургона на пике порыва, градусов.")]
+            [Min(0)] public float vanCameraGustRumbleDeg = 1.2f;
+            [Tooltip("Дрожь камеры робота (пешком) в шторме, градусов.")]
+            [Min(0)] public float robotStormTremorDeg = 0.4f;
+            [Tooltip("Наклон камеры робота в сторону толчка на пике порыва, градусов.")]
+            [Min(0)] public float robotGustLeanDeg = 3f;
+            [Tooltip("Раскачивание фургона ветром: момент крена в шторме, Н·м (0 — выключить).")]
+            [Min(0)] public float vanSwayTorque = 1500f;
+            [Tooltip("Дополнительный момент крена на пике порыва, Н·м.")]
+            [Min(0)] public float vanGustRollTorque = 2500f;
+            [Tooltip("Частота раскачивания, Гц.")]
+            [Min(0.05f)] public float vanSwayHz = 0.5f;
         }
 
         [Serializable]

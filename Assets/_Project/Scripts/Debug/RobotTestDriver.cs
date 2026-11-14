@@ -34,6 +34,7 @@ namespace LastRide.DebugTools
             yield return null; // VanBoarding высаживает робота на следующем кадре
             yield return null;
             robot.mouseLookEnabled = false;
+            if (gm != null) gm.Warmth.Invulnerable = true; // замеры скорости при фиксированном тепле, без остывания
             robot.warmth = 100f;
 
             IEnumerator Walk(float seconds, Vector2 input)

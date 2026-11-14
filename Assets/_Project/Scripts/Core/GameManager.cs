@@ -31,6 +31,12 @@ namespace LastRide.Core
         /// <summary>Искра: запас горения печки/лампы, тление, угасание (ТЗ 4.2).</summary>
         public LastRide.Fire.SparkFire Spark { get; private set; }
 
+        /// <summary>Тепло робота: убывает снаружи, растёт у горящей печки, замерзание (ТЗ 4.3).</summary>
+        public LastRide.Player.WarmthSystem Warmth { get; private set; }
+
+        /// <summary>Погода: акты, шторм/затишье, порывы (ТЗ 4.6). Пишет время замерзания и множитель порыва в <see cref="Warmth"/>.</summary>
+        public LastRide.Weather.WeatherSystem Weather { get; private set; }
+
         /// <summary>Множитель скорости времени для отладки (F5). На паузе время всё равно стоит.</summary>
         public float DebugTimeMultiplier
         {
@@ -74,6 +80,11 @@ namespace LastRide.Core
             Difficulty = Config != null ? Config.defaultDifficulty : null;
             GameInput.Initialize();
             Spark = new LastRide.Fire.SparkFire(Balance);
+            Warmth = new LastRide.Player.WarmthSystem(Balance);
+            DebugTools.DebugOverlay.RegisterLine("Тепло", () => Warmth.ToString());
+            Weather = new LastRide.Weather.WeatherSystem(Config, Balance);
+            DebugTools.DebugOverlay.RegisterLine("Погода", () => Weather.ToString());
+            gameObject.AddComponent<LastRide.Weather.WindPusher>();
             DebugTools.DebugOverlay.RegisterLine("Инвентарь", () => Inventory.ToString());
             DebugTools.DebugOverlay.RegisterLine("Огонь", () => Spark.ToString());
 
@@ -85,7 +96,12 @@ namespace LastRide.Core
         private void Update()
         {
             // Огонь горит всегда, пока идёт игра — и в фургоне, и пока робот снаружи. На паузе timeScale = 0.
-            if (State == GameState.Playing) Spark.Tick(Time.deltaTime);
+            if (State == GameState.Playing)
+            {
+                Spark.Tick(Time.deltaTime);
+                Weather.Tick(Time.deltaTime, Warmth); // до Warmth.Tick: тот читает свежее время замерзания и множитель порыва
+                Warmth.Tick(Time.deltaTime, PlayerMode, Spark);
+            }
         }
 
         private void OnDestroy()

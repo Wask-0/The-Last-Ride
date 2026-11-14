@@ -9,7 +9,7 @@ namespace LastRide.Player
     /// Скорость = lerp(cold, warm, тепло/100); глубокий снег ×0.6; лёд — инерция; ниже порога тепла —
     /// периодические «заедания» (рывки 0.2 с); покачивание камеры замедляется на холоде.
     /// Камера — CinemachineCamera на <see cref="cameraPivot"/>; приоритет высокий, только когда режим игрока — пешком.
-    /// Тепло пока задаёт поле <see cref="warmth"/> (подзадача 6.1 передаст владение системе тепла).
+    /// Тепло ведёт <see cref="WarmthSystem"/> (<see cref="warmth"/> — его значение).
     /// </summary>
     [DefaultExecutionOrder(-100)]
     [RequireComponent(typeof(CharacterController))]
@@ -19,8 +19,17 @@ namespace LastRide.Player
         public Transform cameraPivot;
         public CinemachineCamera cinemachineCamera;
 
-        [Tooltip("Текущее тепло 0..100 (временно, до 6.1).")]
-        [Range(0, 100)] public float warmth = 100f;
+        /// <summary>
+        /// Текущее тепло 0..max — это <c>GameManager.Warmth.Value</c> (система тепла, 6.1); запись — для тестов и отладки.
+        /// Без GameManager (сцена без него) работает локальное значение.
+        /// </summary>
+        public float warmth
+        {
+            get { var gm = GameManager.Instance; return gm != null && gm.Warmth != null ? gm.Warmth.Value : _localWarmth; }
+            set { var gm = GameManager.Instance; if (gm != null && gm.Warmth != null) gm.Warmth.SetValue(value); else _localWarmth = value; }
+        }
+
+        private float _localWarmth = 100f;
 
         [Header("Обзор")]
         public Vector2 pitchLimits = new Vector2(-80f, 80f);
@@ -55,6 +64,9 @@ namespace LastRide.Player
 
         /// <summary>Скорость ходьбы при текущем тепле, до учёта поверхности.</summary>
         public float WalkSpeed => Mathf.Lerp(Move.walkSpeedCold, Move.walkSpeedWarm, Mathf.Clamp01(warmth / WarmMax));
+
+        /// <summary>Внешний снос, м/с (порыв ветра, <c>WindPusher</c>): добавляется к движению, не влияет на <see cref="Speed"/>.</summary>
+        public Vector3 ExternalVelocity { get; set; }
 
         /// <summary>Вход в игру: на следующем кадре использовать эти значения вместо ввода (автотесты).</summary>
         public Vector2? MoveOverride { get; set; }
@@ -209,6 +221,18 @@ namespace LastRide.Player
         }
 
         private float _bobRoll;
+        private float _jamKick; // 1 в момент заедания, затухает: камера «вздрагивает»
+
+        /// <summary>Сколько заеданий было с начала игры (телеметрия для тестов).</summary>
+        public int JamCount { get; private set; }
+
+        [Header("Заедание механизма")]
+        [Tooltip("Просадка камеры при заедании, м.")]
+        public float jamKickDrop = 0.05f;
+        [Tooltip("Наклон камеры вниз при заедании, градусов.")]
+        public float jamKickPitch = 1.6f;
+        [Tooltip("Скорость затухания толчка, 1/с.")]
+        public float jamKickDecay = 7f;
 
         private void Walk(bool active, float dt)
         {
@@ -223,6 +247,9 @@ namespace LastRide.Player
             float speed = WalkSpeed;
             if (Surface == SurfaceType.DeepSnow) speed *= move.deepSnowSpeedMultiplier;
             if (IsJammed) speed = 0f;
+            // Замерзание (тепло 0): за freezeToStopSeconds механизм встаёт совсем.
+            var gmw = GameManager.Instance;
+            if (gmw != null && gmw.Warmth != null) speed *= 1f - gmw.Warmth.FreezeProgress;
 
             Vector3 wish = (transform.right * input.x + transform.forward * input.y) * speed;
 
@@ -236,7 +263,7 @@ namespace LastRide.Player
             else _verticalSpeed -= gravity * dt;
 
             _velocity = new Vector3(horizontal.x, _verticalSpeed, horizontal.z);
-            _cc.Move(_velocity * dt);
+            _cc.Move((_velocity + ExternalVelocity) * dt);
             _velocity.y = 0f; // в Speed учитывается только горизонталь
         }
 
@@ -254,6 +281,9 @@ namespace LastRide.Player
             {
                 _jamTimeLeft = w.jamDuration;
                 _nextJamIn = NextJamInterval();
+                _jamKick = 1f;
+                JamCount++;
+                EventBus<MechanismJammed>.Publish(new MechanismJammed { Duration = w.jamDuration });
             }
         }
 
@@ -276,9 +306,24 @@ namespace LastRide.Player
 
             float vert = Mathf.Sin(_bobPhase * 2f) * bobVertical;
             float side = Mathf.Cos(_bobPhase) * bobSide;
-            cameraPivot.localPosition = _pivotRest + new Vector3(side, vert, 0f) * _bobAmount;
+            _jamKick = Mathf.MoveTowards(_jamKick, 0f, jamKickDecay * dt);
+
+            // Погода: дрожь камеры в шторме и наклон в сторону порыва (диегетический сигнал фазы).
+            float windPitch = 0f, windRoll = 0f;
+            var gmw = GameManager.Instance;
+            if (gmw != null && gmw.Weather != null && gmw.Balance != null)
+            {
+                var c = gmw.Balance.weather;
+                float tt = Time.unscaledTime * 17f;
+                float storm = gmw.Weather.StormMix;
+                windPitch = (Mathf.PerlinNoise(tt, 1.7f) - 0.5f) * 2f * c.robotStormTremorDeg * storm;
+                windRoll = (Mathf.PerlinNoise(2.9f, tt) - 0.5f) * 2f * c.robotStormTremorDeg * storm;
+                float gustSide = Vector3.Dot(gmw.Weather.GustDirection, transform.right);
+                windRoll -= gustSide * c.robotGustLeanDeg * gmw.Weather.GustStrength01 * gmw.Weather.GustPower;
+            }
+            cameraPivot.localPosition = _pivotRest + new Vector3(side, vert, 0f) * _bobAmount + Vector3.down * (jamKickDrop * _jamKick);
             _bobRoll = Mathf.Cos(_bobPhase) * bobRollDegrees * _bobAmount;
-            cameraPivot.localRotation = Quaternion.Euler(_pitch, 0f, _bobRoll);
+            cameraPivot.localRotation = Quaternion.Euler(_pitch + jamKickPitch * _jamKick + windPitch, 0f, _bobRoll + windRoll);
         }
     }
 }
