@@ -565,6 +565,16 @@ namespace LastRide.Core
             [Tooltip("Радиус камеры для отталкивания от препятствий (сугробы, стены, скалы), м.")]
             [Min(0)] public float collisionRadius = 0.3f;
 
+            [Header("Колесо мыши — дальность камеры")]
+            [Tooltip("Минимальный множитель дальности (камера ближе всего).")]
+            [Min(0.2f)] public float zoomMin = 0.55f;
+            [Tooltip("Максимальный множитель дальности (камера дальше всего).")]
+            [Min(1f)] public float zoomMax = 2.2f;
+            [Tooltip("На сколько меняется множитель за один щелчок колеса.")]
+            [Min(0.01f)] public float zoomStep = 0.12f;
+            [Tooltip("Плавность изменения дальности, 1/с (больше — быстрее).")]
+            [Min(0.1f)] public float zoomSmooth = 10f;
+
             [Header("Тряска")]
             [Tooltip("Лёгкая «дорожная» тряска на максимальной скорости, °.")]
             [Min(0)] public float rumbleAtMaxSpeed = 0.12f;

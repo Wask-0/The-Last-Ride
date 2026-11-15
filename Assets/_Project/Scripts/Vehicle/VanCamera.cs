@@ -10,7 +10,7 @@ namespace LastRide.Vehicle
     /// бленды между камерами (выход из фургона — 4.3).
     /// Базовая позиция — из <c>GameBalance → Van Camera</c>: <c>distance</c> позади, <c>height</c> над фургоном,
     /// наклон <c>pitchDown</c>. Мышь вращает камеру вокруг точки над фургоном; без мыши при движении камера
-    /// возвращается за спину. Мышь вращает камеру только при зажатой левой кнопке. Тряска — от скорости, кочек и порывов (<see cref="AddTrauma"/>).
+    /// возвращается за спину. Мышь вращает камеру всегда (без зажатия кнопок), колесо меняет дальность. Тряска — от скорости, кочек и порывов (<see cref="AddTrauma"/>).
     /// </summary>
     [DefaultExecutionOrder(-200)]
     [RequireComponent(typeof(CinemachineCamera))]
@@ -31,6 +31,7 @@ namespace LastRide.Vehicle
         private float _baseYaw, _baseYawVel;
         private float _orbitYaw, _orbitPitch;
         private float _idleTime;
+        private float _zoomTarget = 1f, _zoom = 1f;
         private Vector3 _pivot, _pivotVel;
         private float _distanceCurrent;
         private float _trauma;
@@ -92,10 +93,10 @@ namespace LastRide.Vehicle
             _baseYaw = Mathf.SmoothDampAngle(_baseYaw, targetYaw, ref _baseYawVel, s.yawSmoothTime, Mathf.Infinity, dt);
 
             // ---- Орбита мышью (карта Van активна только в фургоне и не на паузе) ----
-            // Камера вращается только пока зажата левая кнопка мыши. Пока кнопка держится, таймер возврата
-            // сброшен — камера остаётся там, куда её повернули, и возвращается за спину после отпускания.
-            bool orbiting = mouseLookEnabled && GameInput.OrbitHeld;
-            Vector2 look = orbiting ? Vector2.ClampMagnitude(GameInput.Look, MaxLookDeltaPerFrame) : Vector2.zero;
+            // Камера вращается мышью всегда (без зажатия кнопок). Пока мышь двигается, таймер возврата сброшен —
+            // камера остаётся там, куда её повернули, и возвращается за спину после паузы в движении мыши.
+            Vector2 look = mouseLookEnabled ? Vector2.ClampMagnitude(GameInput.Look, MaxLookDeltaPerFrame) : Vector2.zero;
+            bool orbiting = look.sqrMagnitude > 0.25f;
             if (orbiting)
             {
                 float orbitK = s.orbitSensitivity * LastRide.Save.GameSettings.MouseSensitivity;
@@ -116,6 +117,17 @@ namespace LastRide.Vehicle
             }
             _orbitYaw = Mathf.Repeat(_orbitYaw + 180f, 360f) - 180f;
 
+            // ---- Колесо мыши: ближе / дальше ----
+            var gmz = GameManager.Instance;
+            if (mouseLookEnabled && gmz != null && gmz.IsGameplayActive && gmz.PlayerMode == PlayerMode.InVan)
+            {
+                var mouse = UnityEngine.InputSystem.Mouse.current;
+                float wheel = mouse != null ? mouse.scroll.ReadValue().y : 0f;
+                if (Mathf.Abs(wheel) > 0.01f) _zoomTarget = Mathf.Clamp(_zoomTarget - Mathf.Clamp(wheel, -1f, 1f) * s.zoomStep, s.zoomMin, s.zoomMax);
+            }
+            _zoomTarget = Mathf.Clamp(_zoomTarget, s.zoomMin, s.zoomMax);
+            _zoom = Mathf.Lerp(_zoom, _zoomTarget, 1f - Mathf.Exp(-s.zoomSmooth * dt));
+
             // ---- Точка вращения над фургоном (мягкое следование) ----
             _pivot = Vector3.SmoothDamp(_pivot, PivotTarget(s), ref _pivotVel, s.followSmoothTime, Mathf.Infinity, dt);
 
@@ -124,7 +136,7 @@ namespace LastRide.Vehicle
             Quaternion rot = Quaternion.Euler(pitch, yaw, 0f);
 
             // ---- Препятствия: подтягиваем камеру ближе, если между ней и фургоном что-то есть ----
-            float radius = Radius(s);
+            float radius = Radius(s) * _zoom;
             float wanted = radius;
             Vector3 back = rot * Vector3.back;
             if (Physics.SphereCast(_pivot, s.collisionRadius, back, out var hit, radius, Layers.GroundMask, QueryTriggerInteraction.Ignore))

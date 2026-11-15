@@ -172,7 +172,7 @@ namespace LastRide.Narrative
             if (_drivingAt >= 0f && _clock >= _drivingAt)
             {
                 _drivingAt = -1f;
-                Hint("driving", "W / S — газ и тормоз, A / D — руль, Space — ручной тормоз, Tab — печка", Cfg.hintSeconds + 2f);
+                Hint("driving", "W / S — газ и тормоз, A / D — руль, Space — ручной тормоз, мышь — камера, колесо — дальность, Tab — печка", Cfg.hintSeconds + 4f);
             }
         }
 
