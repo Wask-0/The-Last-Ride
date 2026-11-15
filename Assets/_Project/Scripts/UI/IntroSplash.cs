@@ -42,9 +42,45 @@ namespace LastRide.UI
             return null;
         }
 
+        /// <summary>
+        /// Проиграть заставку. Любая ошибка внутри (видео, звук, интерфейс) не должна оставить чёрный экран — логируем, убираем
+        /// созданное и возвращаемся к меню.
+        /// </summary>
         public static IEnumerator Play(GameManager gm)
         {
+            var inner = PlayInner(gm);
+            while (true)
+            {
+                object step;
+                try
+                {
+                    if (!inner.MoveNext()) break;
+                    step = inner.Current;
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError("[Intro] Сбой заставки, переходим в меню: " + e);
+                    Cleanup(gm);
+                    break;
+                }
+                yield return step;
+            }
+        }
+
+        private static void Cleanup(GameManager gm)
+        {
+            var canvas = gm.transform.Find("IntroCanvas");
+            if (canvas != null) UnityEngine.Object.Destroy(canvas.gameObject);
+            var host = gm.transform.Find("IntroVideo");
+            if (host != null) UnityEngine.Object.Destroy(host.gameObject);
+            var am = AudioManager.Instance;
+            if (am != null) { am.SetDuck(AudioBus.Music, 0f); am.SetDuck(AudioBus.Ambience, 0f); }
+        }
+
+        private static IEnumerator PlayInner(GameManager gm)
+        {
             Played = true;
+            Debug.Log("[Intro] Старт, файл: " + (FindFile() ?? "нет"));
             if (Array.IndexOf(Environment.GetCommandLineArgs(), "-lr-perf") >= 0) yield break;
             string file = FindFile();
             if (file == null) yield break;
@@ -125,13 +161,14 @@ namespace LastRide.UI
                 }
                 if (fader != null) yield return fader.FadeTo(1f, FadeSeconds);
             }
-            else Debug.LogWarning("[Intro] Видео не подготовилось — пропускаем заставку.");
+            else Debug.LogWarning("[Intro] Видео не подготовилось (failed=" + failed + ", prepared=" + vp.isPrepared + ") — пропускаем заставку.");
 
             vp.Stop();
             UnityEngine.Object.Destroy(host);
             UnityEngine.Object.Destroy(canvas.gameObject);
             if (rt != null) { rt.Release(); UnityEngine.Object.Destroy(rt); }
             if (am != null) { am.SetDuck(AudioBus.Music, 0f); am.SetDuck(AudioBus.Ambience, 0f); }
+            Debug.Log("[Intro] Конец заставки.");
         }
 
         private static bool SkipPressed()
