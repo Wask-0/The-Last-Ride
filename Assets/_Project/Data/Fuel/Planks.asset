@@ -15,6 +15,6 @@ MonoBehaviour:
   id: planks
   displayName: "\u0414\u043E\u0441\u043A\u0438"
   promptName: "\u0434\u043E\u0441\u043A\u0438"
-  burnSeconds: 30
+  burnSeconds: 45
   hotkey: 2
   tint: {r: 0.95, g: 0.6, b: 0.3, a: 1}
