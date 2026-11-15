@@ -106,6 +106,9 @@ namespace LastRide.Core
             Config = GameConfig.Load();
             Difficulty = Config != null ? Config.defaultDifficulty : null;
             GameInput.Initialize();
+            // Робот проходит сквозь невидимые стены дороги (они держат только фургон).
+            int playerLayer = LayerMask.NameToLayer(Layers.Player), wallLayer = LayerMask.NameToLayer(Layers.RoadWall);
+            if (playerLayer >= 0 && wallLayer >= 0) Physics.IgnoreLayerCollision(playerLayer, wallLayer, true);
             // В редакторе фокус игнорируется (автотесты через MCP), в билде — обычное поведение: без фокуса устройства отключаются.
             if (!Application.isEditor && UnityEngine.InputSystem.InputSystem.settings != null)
                 UnityEngine.InputSystem.InputSystem.settings.backgroundBehavior = UnityEngine.InputSystem.InputSettings.BackgroundBehavior.ResetAndDisableNonBackgroundDevices;
@@ -157,6 +160,7 @@ namespace LastRide.Core
                 Spark.Tick(Time.deltaTime);
                 Weather.Tick(Time.deltaTime, Warmth); // до Warmth.Tick: тот читает свежее время замерзания и множитель порыва
                 Progress.Tick(this);
+                KeepRobotNearRoad();
                 Acts.Tick(Time.deltaTime);
                 AudioLogs.Tick(Time.deltaTime);
                 Tutorial.Tick(Time.deltaTime);
@@ -241,6 +245,43 @@ namespace LastRide.Core
             DebugTimeMultiplier = 1f;
             PlayerMode = PlayerMode.OnFoot;
             if (Config != null && Config.defaultDifficulty != null) Difficulty = Config.defaultDifficulty;
+        }
+
+        /// <summary>Режим разработчика выключили: снять эффекты читов (бессмертие, ускорение времени), спрятать оверлей.</summary>
+        public void DisableDebugEffects()
+        {
+            Spark.Invulnerable = false;
+            Warmth.Invulnerable = false;
+            DebugTimeMultiplier = 1f;
+        }
+
+        private Vector3 _lastSafeRobotPos;
+        private float _lastSafeStamp;
+        private bool _hasSafeRobotPos;
+
+        /// <summary>
+        /// Раз стены дороги для робота проходимы, страхуем от ухода слишком далеко/падения: за пределами
+        /// <c>movement.maxRobotDistanceFromRoad</c> от оси или при падении ниже последнего безопасного места — возврат туда.
+        /// </summary>
+        private void KeepRobotNearRoad()
+        {
+            var robot = LastRide.Player.RobotController.Active;
+            if (robot == null || robot.Seated || PlayerMode == PlayerMode.InVan || !Progress.Valid || Balance == null) { _hasSafeRobotPos = false; return; }
+            var m = Balance.movement;
+            Vector3 p = robot.transform.position;
+            bool far = Progress.AxisDistance > m.maxRobotDistanceFromRoad;
+            bool fell = _hasSafeRobotPos && p.y < _lastSafeRobotPos.y - m.maxRobotFallMeters;
+            if ((far || fell) && _hasSafeRobotPos)
+            {
+                robot.Teleport(_lastSafeRobotPos + Vector3.up * 0.1f, robot.Yaw);
+                return;
+            }
+            if (!far && Progress.AxisDistance < m.maxRobotDistanceFromRoad * 0.85f && robot.IsGrounded && Time.time - _lastSafeStamp > 0.5f)
+            {
+                _lastSafeRobotPos = p;
+                _lastSafeStamp = Time.time;
+                _hasSafeRobotPos = true;
+            }
         }
 
         public bool IsGameplayActive => State == GameState.Playing;

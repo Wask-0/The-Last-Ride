@@ -17,6 +17,7 @@ namespace LastRide.Save
         public const string KeyResHeight = "opt_res_h";
         public const string KeyMouse = "opt_mouse";
         public const string KeyInvertY = "opt_invert_y";
+        public const string KeyDeveloper = "opt_dev_mode";
 
         public const float MouseMin = 0.2f, MouseMax = 3f;
         public const int MinResolutionWidth = 1024;
@@ -32,6 +33,16 @@ namespace LastRide.Save
         {
             get => PlayerPrefs.GetInt(KeyInvertY, 0) != 0;
             set => PlayerPrefs.SetInt(KeyInvertY, value ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Режим разработчика (отладочные клавиши F1–F5: оверлей, чекпоинт, топливо, бессмертие, время). По умолчанию выключен;
+        /// включается в настройках и работает в любой сборке.
+        /// </summary>
+        public static bool DeveloperMode
+        {
+            get => PlayerPrefs.GetInt(KeyDeveloper, 0) != 0;
+            set => PlayerPrefs.SetInt(KeyDeveloper, value ? 1 : 0);
         }
 
         // ---- Графика ----

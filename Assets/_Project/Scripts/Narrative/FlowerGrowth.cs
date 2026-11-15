@@ -17,6 +17,9 @@ namespace LastRide.Narrative
         private Mesh _mesh;
         private MeshBuilder _builder;
         private float _built = -1f;
+        private MaterialPropertyBlock _block;
+        private float _emission = -1f;
+        private static readonly int EmissionIntensity = Shader.PropertyToID("_EmissionIntensity");
 
         /// <summary>Текущая стадия роста 0..1.</summary>
         public float Growth01 { get; private set; }
@@ -28,12 +31,29 @@ namespace LastRide.Narrative
             GetComponent<MeshFilter>().sharedMesh = _mesh;
             if (material != null) GetComponent<MeshRenderer>().sharedMaterial = material;
             _builder = new MeshBuilder();
+            _block = new MaterialPropertyBlock();
+            ApplyEmission();
             SetGrowth(0f);
         }
 
         private void OnDestroy()
         {
             if (_mesh != null) Destroy(_mesh);
+        }
+
+        private void LateUpdate() => ApplyEmission();
+
+        /// <summary>Свечение цветка из <c>GameBalance.finale.flowerEmission</c> (по умолчанию слишком яркое — засвечивалось).</summary>
+        private void ApplyEmission()
+        {
+            var gm = LastRide.Core.GameManager.Instance;
+            float e = gm != null && gm.Balance != null ? gm.Balance.finale.flowerEmission : 0.25f;
+            if (Mathf.Approximately(e, _emission)) return;
+            _emission = e;
+            var r = GetComponent<MeshRenderer>();
+            r.GetPropertyBlock(_block);
+            _block.SetFloat(EmissionIntensity, e);
+            r.SetPropertyBlock(_block);
         }
 
         /// <summary>Выставить стадию роста (меш пересобирается, если она сдвинулась заметно или достигла краёв).</summary>

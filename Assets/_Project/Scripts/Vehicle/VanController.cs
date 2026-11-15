@@ -67,6 +67,7 @@ namespace LastRide.Vehicle
 
         private void Awake()
         {
+            if (GetComponent<VanSnowTint>() == null) gameObject.AddComponent<VanSnowTint>();
             _rb = GetComponent<Rigidbody>();
             _cfg = ResolveConfig();
 

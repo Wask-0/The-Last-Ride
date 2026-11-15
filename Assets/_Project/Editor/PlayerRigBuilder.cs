@@ -19,7 +19,10 @@ namespace LastRide.Editor
         private const float JarDistance = 14f;
         private const float RobotDistance = 4f;
         // Между краем дороги и стеной мастерской всего ~3 м — банка у дороги, робот ближе к фургону.
-        private const float JarOffsetFromRoadEdge = 1.5f;
+        private const float JarOffsetFromRoadEdge = 1.5f; // только для выбора стороны, куда смотрит робот
+        // Банка с Искрой — на столе в гараже (позиция относительно POI_Workshop; задана вручную автором, не менять без нужды).
+        private static readonly Vector3 JarLocalInWorkshop = new Vector3(-2.074f, 1.025f, -2.376f);
+        private const float JarYawInWorkshop = 295f;
         private const float RobotOffsetFromRoadEdge = 1.2f;
 
         [MenuItem(EditorAssemblyMarker.MenuRoot + "Level/Build Player Rig")]
@@ -51,15 +54,15 @@ namespace LastRide.Editor
             van.transform.SetPositionAndRotation(vs.position + Vector3.up * 0.3f, vanRot);
             var vanCtrl = van.GetComponent<LastRide.Vehicle.VanController>();
 
-            // --- Банка с Искрой: на обочине, со стороны мастерской ---
+            // --- Банка с Искрой: на столе в гараже ---
             var js = path.Evaluate(JarDistance);
             Vector3 toWorkshop = workshop.transform.position - js.position;
             toWorkshop.y = 0f;
             Vector3 side = toWorkshop.sqrMagnitude > 0.01f ? toWorkshop.normalized : js.right;
-            Vector3 jarPos = Ground(js.position + side * (js.width * 0.5f + JarOffsetFromRoadEdge), js.position.y);
+            Vector3 jarPos = workshop.transform.TransformPoint(JarLocalInWorkshop);
             var jar = (GameObject)PrefabUtility.InstantiatePrefab(GameplayPrefabsBuilder.SparkJar, root);
             jar.name = "SparkJar";
-            jar.transform.SetPositionAndRotation(jarPos + Vector3.up * 0.02f, Quaternion.Euler(0f, 25f, 0f));
+            jar.transform.SetPositionAndRotation(jarPos, workshop.transform.rotation * Quaternion.Euler(0f, JarYawInWorkshop, 0f));
 
             // --- Робот на обочине напротив фургона, лицом к банке ---
             var rs = path.Evaluate(RobotDistance);

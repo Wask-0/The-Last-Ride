@@ -35,7 +35,10 @@ namespace LastRide.Core
         public const string Player = "Player";
         public const string Interactable = "Interactable";
 
+        /// <summary>Невидимые стены вдоль дороги: держат фургон, но не робота (он выходит к топливу за стенами).</summary>
+        public const string RoadWall = "RoadWall";
+
         /// <summary>Маска «земли» для лучей подвески и шагов: всё, кроме фургона, игрока и Ignore Raycast.</summary>
-        public static int GroundMask => ~(LayerMask.GetMask(Vehicle, Player, Interactable, "Ignore Raycast"));
+        public static int GroundMask => ~(LayerMask.GetMask(Vehicle, Player, Interactable, RoadWall, "Ignore Raycast"));
     }
 }

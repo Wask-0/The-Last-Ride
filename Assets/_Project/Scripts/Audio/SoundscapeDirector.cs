@@ -149,7 +149,10 @@ namespace LastRide.Audio
         private void UpdateMechanism(GameManager gm, GameBalance.AudioSettingsData c)
         {
             var wm = gm.Warmth;
-            if (wm == null) { Mechanism.Gain = 0f; return; }
+            // Тиканье механизма — только в игровом процессе: ни в меню (и во время видеозаставки), ни в титрах.
+            bool inGameplay = gm.State == GameState.Playing || gm.State == GameState.Paused || gm.State == GameState.Dying
+                              || gm.State == GameState.Restoring || gm.State == GameState.Ending;
+            if (wm == null || !inGameplay) { Mechanism.Gain = 0f; return; }
             var robot = RobotController.Active;
             bool jammed = robot != null && robot.IsJammed;
             float alive = 1f - Mathf.Clamp01(wm.FreezeProgress);

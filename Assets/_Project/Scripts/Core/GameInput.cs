@@ -106,7 +106,7 @@ namespace LastRide.Core
             Set(_van, playing && inVan);
             Set(_foot, playing && !inVan);
             Set(_ui, state == GameState.MainMenu || state == GameState.Paused || state == GameState.Credits);
-            Set(_debug, playing && Debug.isDebugBuild);
+            Set(_debug, playing && LastRide.Save.GameSettings.DeveloperMode);
         }
 
         public static bool IsMapEnabled(string mapName)

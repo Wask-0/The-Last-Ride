@@ -15,6 +15,6 @@ MonoBehaviour:
   id: briquette
   displayName: "\u0411\u0440\u0438\u043A\u0435\u0442\u044B"
   promptName: "\u0431\u0440\u0438\u043A\u0435\u0442"
-  burnSeconds: 120
+  burnSeconds: 60
   hotkey: 3
   tint: {r: 1, g: 0.45, b: 0.2, a: 1}

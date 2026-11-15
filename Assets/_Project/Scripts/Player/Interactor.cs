@@ -49,7 +49,7 @@ namespace LastRide.Player
         private IInteractable Aim()
         {
             Transform eye = _robot.cameraPivot != null ? _robot.cameraPivot : transform;
-            int mask = ~LayerMask.GetMask(Layers.Player, "Ignore Raycast");
+            int mask = ~LayerMask.GetMask(Layers.Player, Layers.RoadWall, "Ignore Raycast");
             if (!Physics.Raycast(eye.position, eye.forward, out var hit, Settings.interactDistance, mask, QueryTriggerInteraction.Collide))
                 return null;
             var found = hit.collider.GetComponentInParent<IInteractable>();

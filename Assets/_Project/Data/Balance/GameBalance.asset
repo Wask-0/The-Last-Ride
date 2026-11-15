@@ -23,6 +23,8 @@ MonoBehaviour:
     vanRecoverSeconds: 8
     defaultFreezeSeconds: 90
     lampOutFreezeSeconds: 20
+    lampWarmSeconds: 30
+    lampStandSpeed: 0.35
     freezeToStopSeconds: 3
     criticalFraction: 0.2
     tickRateWarm: 2.5
@@ -38,6 +40,8 @@ MonoBehaviour:
     iceInertiaSeconds: 0.6
     mouseSensitivity: 0.12
     interactDistance: 2.5
+    maxRobotDistanceFromRoad: 45
+    maxRobotFallMeters: 25
     maxExitVanSpeed: 1.5
     boardingCooldown: 0.5
   sparkVisual:
@@ -55,6 +59,7 @@ MonoBehaviour:
     colorBlendSpeed: 4
     brightnessSpeed: 5
   van:
+    roofSnowColor: {r: 0.66, g: 0.76, b: 0.93, a: 1}
     maxSpeed: 14
     reverseMaxSpeed: 4
     driveAcceleration: 3.5
@@ -245,6 +250,40 @@ MonoBehaviour:
     cameraBreathSeconds: 40
     lookSideOffset: 2.6
     buttonFontSize: 36
+  finale:
+    socketPrompt: "\u0412\u0441\u0442\u0430\u0432\u0438\u0442\u044C \u0418\u0441\u043A\u0440\u0443"
+    lookSeconds: 0.9
+    lowerSeconds: 1
+    preLiftSeconds: 0.8
+    liftSeconds: 18
+    retreatSeconds: 4
+    lightRowRampSeconds: 0.7
+    lightEmission: 8
+    stationRampSeconds: 3
+    lanternRampSeconds: 3
+    lanternLightIntensity: 60
+    lanternLightRange: 120
+    finalLogDelaySeconds: 1.5
+    afterLogSeconds: 2
+    whiteFadeSeconds: 4
+    clearFadeSeconds: 2.5
+    flowerGrowSeconds: 16
+    creditsStartDelaySeconds: 2.5
+    creditsLineSeconds: 5
+    creditsHoldSeconds: 3
+    endFadeSeconds: 2
+    skipAfterSeconds: 3
+    creditsLines:
+    - THE LAST RIDE
+    - "\u0422\u044B \u0434\u043E\u0432\u0451\u0437 \u0418\u0441\u043A\u0440\u0443
+      \u0434\u043E \u0412\u0435\u0440\u0448\u0438\u043D\u044B."
+    - "\u0422\u0435\u043F\u043B\u043E \u2014 \u044D\u0442\u043E \u043D\u0435 \u0446\u0438\u0444\u0440\u0430
+      \u043D\u0430 \u0448\u043A\u0430\u043B\u0435."
+    - "\u0421\u043F\u0430\u0441\u0438\u0431\u043E \u0437\u0430 \u0438\u0433\u0440\u0443."
+    - KTD production
+    flowerEmission: 0.25
+    stageLightIntensity: 1.1
+    cameraFollow: 3
   audio:
     masterDb: 0
     musicDb: -4
@@ -257,7 +296,7 @@ MonoBehaviour:
     sfxPoolSize: 12
     windGain: 0.55
     fireGain: 0.5
-    mechanismGain: 0.4
+    mechanismGain: 0.054
     engineGain: 0.5
     windFullAt: 12
     windFloor: 0.12
@@ -266,7 +305,7 @@ MonoBehaviour:
     crackleRateMax: 14
     stoveHearRange: 22
     lampHandGain: 0.55
-    mechanismInVanGain: 0.45
+    mechanismInVanGain: 0.27
     creakGain: 0.5
     engineIdleHz: 34
     engineMaxHz: 88
@@ -301,6 +340,8 @@ MonoBehaviour:
     beaconStartProgress: 0.45
     beaconSummitLevel: 0.55
     beaconFinaleRise: 20
+    menuMusicLevel: 0.8
+    menuAmbienceLevel: 0.4
     duckDb: -9
     duckAmbienceDb: -6
     duckAttack: 0.25

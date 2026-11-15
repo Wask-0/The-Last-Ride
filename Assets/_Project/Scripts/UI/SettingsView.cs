@@ -32,7 +32,7 @@ namespace LastRide.UI
         private static readonly string[] VolumeNames = { "Общая громкость", "Музыка", "Эффекты", "Голос" };
         private Slider _mouse;
         private TextMeshProUGUI _mouseText;
-        private TextMeshProUGUI _quality, _resolution, _fullscreen, _invert, _subtitles;
+        private TextMeshProUGUI _quality, _resolution, _fullscreen, _invert, _subtitles, _developer;
         private List<Vector2Int> _resolutions = new List<Vector2Int>();
 
         public static bool IsOpen { get; private set; }
@@ -116,7 +116,7 @@ namespace LastRide.UI
             list.anchorMin = list.anchorMax = new Vector2(0.5f, 1f);
             list.pivot = new Vector2(0.5f, 1f);
             list.anchoredPosition = new Vector2(0f, -140f);
-            list.sizeDelta = new Vector2(LabelWidth + ControlWidth + 90f, 800f);
+            list.sizeDelta = new Vector2(LabelWidth + ControlWidth + 90f, 900f);
             var layout = list.gameObject.AddComponent<VerticalLayoutGroup>();
             layout.spacing = 6f;
             layout.childAlignment = TextAnchor.UpperCenter;
@@ -150,6 +150,8 @@ namespace LastRide.UI
             UiKit.MakeCycle(inv, _ => { GameSettings.InvertY = !GameSettings.InvertY; Refresh(); }, out _invert, ControlWidth, RowHeight - 8f);
             var sub = Row(list, "Субтитры");
             UiKit.MakeCycle(sub, _ => { SubtitleView.Enabled = !SubtitleView.Enabled; Refresh(); }, out _subtitles, ControlWidth, RowHeight - 8f);
+            var dev = Row(list, "Режим разработчика (F1–F5)");
+            UiKit.MakeCycle(dev, _ => ToggleDeveloper(), out _developer, ControlWidth, RowHeight - 8f);
 
             var gm = GameManager.Instance;
             float font = gm != null && gm.Balance != null ? gm.Balance.menu.buttonFontSize : 36f;
@@ -223,6 +225,17 @@ namespace LastRide.UI
             _mouseText.text = "×" + ms.ToString("0.0");
             _invert.text = GameSettings.InvertY ? "Вкл" : "Выкл";
             _subtitles.text = SubtitleView.Enabled ? "Вкл" : "Выкл";
+            _developer.text = GameSettings.DeveloperMode ? "Вкл" : "Выкл";
+        }
+
+        private void ToggleDeveloper()
+        {
+            bool on = !GameSettings.DeveloperMode;
+            GameSettings.DeveloperMode = on;
+            var gm = GameManager.Instance;
+            if (!on && gm != null) gm.DisableDebugEffects();
+            if (gm != null) GameInput.ApplyContext(gm.State, gm.PlayerMode); // карта Debug включается/выключается сразу
+            Refresh();
         }
 
         private void OnVolume(int index, float v)

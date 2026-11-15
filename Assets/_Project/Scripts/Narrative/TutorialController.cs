@@ -149,12 +149,12 @@ namespace LastRide.Narrative
             if (_controlsAt >= 0f && _clock >= _controlsAt)
             {
                 _controlsAt = -1f;
-                if (State == PrologueState.FindJar) Hint("controls", "WASD — идти, мышь — осмотреться");
+                if (State == PrologueState.FindJar) Hint("controls", Cfg.controlsHintText, Cfg.hintSeconds + 4f);
             }
             if (_findJarAt >= 0f && _clock >= _findJarAt)
             {
                 _findJarAt = -1f;
-                if (State == PrologueState.FindJar) Hint("find_jar", "Найдите банку с Искрой — она тлеет у мастерской");
+                if (State == PrologueState.FindJar) Hint("find_jar", Cfg.findJarHintText, Cfg.hintSeconds + 2f);
             }
             if (_sitAt >= 0f && _clock >= _sitAt)
             {

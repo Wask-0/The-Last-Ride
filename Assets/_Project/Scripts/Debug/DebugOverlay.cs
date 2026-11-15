@@ -50,7 +50,6 @@ namespace LastRide.DebugTools
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Bootstrap()
         {
-            if (!Debug.isDebugBuild) return;
             var go = new GameObject("[DebugOverlay]");
             DontDestroyOnLoad(go);
             go.AddComponent<DebugOverlay>();
@@ -64,6 +63,9 @@ namespace LastRide.DebugTools
                 float fps = 1f / dt;
                 _fpsSmoothed = _fpsSmoothed <= 0f ? fps : Mathf.Lerp(_fpsSmoothed, fps, 1f - Mathf.Exp(-dt * 4f));
             }
+
+            // Режим разработчика выключен (настройки) — оверлей и отладочные клавиши молчат.
+            if (!LastRide.Save.GameSettings.DeveloperMode) { OverlayVisible = false; return; }
 
             if (GameInput.DebugOverlayPressed) OverlayVisible = !OverlayVisible;
 
@@ -157,7 +159,7 @@ namespace LastRide.DebugTools
 
         private void OnGUI()
         {
-            if (!OverlayVisible) return;
+            if (!OverlayVisible || !LastRide.Save.GameSettings.DeveloperMode) return;
             EnsureStyle();
 
             _sb.Clear();

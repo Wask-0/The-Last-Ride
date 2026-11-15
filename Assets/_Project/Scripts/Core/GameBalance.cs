@@ -54,7 +54,7 @@ namespace LastRide.Core
             [Header("Слои (10.2): общая громкость слоя 0…1")]
             [Range(0, 1)] public float windGain = 0.55f;
             [Range(0, 1)] public float fireGain = 0.5f;
-            [Range(0, 1)] public float mechanismGain = 0.4f;
+            [Range(0, 1)] public float mechanismGain = 0.24f;
             [Range(0, 1)] public float engineGain = 0.5f;
             [Header("Ветер")]
             [Tooltip("Ветер (м/с), при котором слой звучит на полную. Обычно = Gusts.referenceWind.")]
@@ -74,7 +74,7 @@ namespace LastRide.Core
             [Range(0, 1)] public float lampHandGain = 0.55f;
             [Header("Механизм робота")]
             [Tooltip("Громкость тиканья внутри фургона (доля).")]
-            [Range(0, 1)] public float mechanismInVanGain = 0.45f;
+            [Range(0, 1)] public float mechanismInVanGain = 0.27f;
             [Tooltip("Громкость скрипа при холоде (доля).")]
             [Range(0, 1)] public float creakGain = 0.5f;
             [Header("Двигатель")]
@@ -194,6 +194,8 @@ namespace LastRide.Core
             [Min(1f)] public float cameraBreathSeconds = 40f;
             [Tooltip("Сдвиг точки взгляда вбок, м (Искра смещается вправо от центра, меню слева).")]
             public float lookSideOffset = 2.6f;
+            [Tooltip("Непрозрачность фона всплывающих окон меню (выбор сложности, «Начать заново?»): 1 — полностью непрозрачно.")]
+            [Range(0.3f, 1f)] public float popupBackgroundAlpha = 0.97f;
             [Tooltip("Размер шрифта кнопок меню.")]
             [Min(10f)] public float buttonFontSize = 36f;
         }
@@ -248,8 +250,13 @@ namespace LastRide.Core
             [Min(0.1f)] public float endFadeSeconds = 2f;
             [Tooltip("Через сколько секунд титров можно пропустить (Esc / Enter / Space).")]
             [Min(0)] public float skipAfterSeconds = 3f;
-            [Tooltip("Строки титров по очереди (первая — крупно).")]
-            public string[] creditsLines = { "THE LAST RIDE", "Ты довёз Искру до Вершины.", "Тепло — это не цифра на шкале.", "Спасибо за игру." };
+            [Tooltip("Строки титров по очереди (первая — крупно, последняя — подпись).")]
+            public string[] creditsLines = { "THE LAST RIDE", "Ты довёз Искру до Вершины.", "Тепло — это не цифра на шкале.", "Спасибо за игру.", "KTD production" };
+            [Header("Цветок титров")]
+            [Tooltip("Яркость свечения лепестков и сердцевины цветка (HDR-множитель материала мира; у обычных поверхностей 4). Меньше — цветок не засвечивается.")]
+            [Min(0)] public float flowerEmission = 0.25f;
+            [Tooltip("Сила тёплого света у цветка в титрах.")]
+            [Min(0)] public float stageLightIntensity = 1.1f;
             [Tooltip("Насколько быстро камера следит за кабинкой (1/с).")]
             [Min(0.1f)] public float cameraFollow = 3f;
         }
@@ -436,6 +443,10 @@ namespace LastRide.Core
             [Min(0)] public float mouseSensitivity = 0.12f;
             [Tooltip("Дальность взаимодействия (луч из прицела), м.")]
             [Min(0)] public float interactDistance = 2.5f;
+            [Tooltip("Робот проходит сквозь невидимые стены вдоль дороги (слой RoadWall) — к топливу за ними можно дотянуться. Дальше этого расстояния от оси пути, м, его возвращает на последнее безопасное место.")]
+            [Min(5)] public float maxRobotDistanceFromRoad = 45f;
+            [Tooltip("Если робот провалился ниже последнего безопасного места на столько метров — возвращаем на это место.")]
+            [Min(3)] public float maxRobotFallMeters = 25f;
             [Tooltip("Максимальная скорость фургона, при которой можно выйти (E), м/с.")]
             [Min(0)] public float maxExitVanSpeed = 1.5f;
             [Tooltip("Пауза после выхода/посадки, прежде чем E сработает снова, с.")]
@@ -445,6 +456,9 @@ namespace LastRide.Core
         [Serializable]
         public sealed class VanSettings
         {
+            [Header("Вид")]
+            [Tooltip("Цвет снега на крыше фургона (по умолчанию белый снег сливался с окружением). Применяется на лету.")]
+            public Color roofSnowColor = new Color(0.66f, 0.76f, 0.93f, 1f);
             [Header("Скорость и тяга")]
             [Tooltip("Максимальная скорость, м/с.")]
             [Min(0)] public float maxSpeed = 14f;
@@ -723,6 +737,10 @@ namespace LastRide.Core
             [Min(0)] public float drivingHintDelaySeconds = 1.5f;
             [Tooltip("Если банку не взяли за столько секунд после первой подсказки — напомнить, где она, с.")]
             [Min(1)] public float findJarHintDelaySeconds = 9f;
+            [Tooltip("Первая подсказка пролога: управление + задание (вторая строка — через Enter в поле).")]
+            [TextArea(2, 4)] public string controlsHintText = "WASD — идти, мышь — осмотреться\nЗадание: возьмите лампу с Искрой — она лежит на столе в гараже";
+            [Tooltip("Напоминание, если лампу с Искрой долго не берут.")]
+            [TextArea(1, 3)] public string findJarHintText = "Возьмите лампу с Искрой — она на столе в гараже";
             [Header("Вид подсказок")]
             [Min(8)] public float hintFontSize = 30f;
             [Tooltip("Отступ подсказки обучения от верхнего края (px эталона 1920×1080).")]

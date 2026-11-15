@@ -34,6 +34,8 @@ namespace LastRide.UI
             Refresh();
 
             yield return null;
+            // Видеозаставка при запуске игры (один раз, до появления меню); без файла Intro.mp4 пропускается сама.
+            if (gm != null && !IntroSplash.Played && (gm.Flow == null || !gm.Flow.Busy)) yield return IntroSplash.Play(gm);
             if (gm != null && gm.Fader != null && gm.Flow != null && !gm.Flow.Busy)
             {
                 float seconds = gm.Balance != null ? gm.Balance.menu.fadeInSeconds : 1.3f;
@@ -57,21 +59,21 @@ namespace LastRide.UI
             float font = GameManager.Instance != null && GameManager.Instance.Balance != null ? GameManager.Instance.Balance.menu.buttonFontSize : 36f;
 
             // Затенение слева — чтобы меню читалось на светлом снегу.
-            var shade = UiKit.Panel(canvas.transform, "Shade", new Color(0.03f, 0.05f, 0.09f, 0.55f));
+            var shade = UiKit.Panel(canvas.transform, "Shade", new Color(0.03f, 0.05f, 0.09f, 0.62f));
             shade.raycastTarget = false;
             var srt = shade.rectTransform;
             srt.anchorMin = new Vector2(0f, 0f);
-            srt.anchorMax = new Vector2(0.38f, 1f);
+            srt.anchorMax = new Vector2(0.5f, 1f); // название целиком на полупрозрачной панели
             srt.offsetMin = srt.offsetMax = Vector2.zero;
 
             _mainGroup = UiKit.Rect(canvas.transform, "Main").gameObject;
             var mrt = (RectTransform)_mainGroup.transform;
             mrt.anchorMin = new Vector2(0f, 0f);
-            mrt.anchorMax = new Vector2(0.38f, 1f);
+            mrt.anchorMax = new Vector2(0.5f, 1f);
             mrt.offsetMin = new Vector2(110f, 0f);
             mrt.offsetMax = Vector2.zero;
 
-            var title = UiKit.Label(mrt, "THE LAST RIDE", 92f, UiKit.TextColor, TextAlignmentOptions.TopLeft, FontStyles.Bold);
+            var title = UiKit.Label(mrt, "THE LAST RIDE", 86f, UiKit.TextColor, TextAlignmentOptions.TopLeft, FontStyles.Bold);
             var trt = title.rectTransform;
             trt.anchorMin = trt.anchorMax = new Vector2(0f, 1f);
             trt.pivot = new Vector2(0f, 1f);
@@ -79,7 +81,8 @@ namespace LastRide.UI
             trt.sizeDelta = new Vector2(900f, 120f);
             title.textWrappingMode = TextWrappingModes.NoWrap;
 
-            var sub = UiKit.Label(mrt, "Довези Искру до Вершины", 34f, UiKit.Accent, TextAlignmentOptions.TopLeft);
+            var sub = UiKit.Label(mrt, "Довези Искру до Вершины", 40f, new Color(1f, 0.86f, 0.62f, 1f), TextAlignmentOptions.TopLeft, FontStyles.Bold);
+            sub.outlineWidth = 0.3f; // контур потемнее — читается и на светлом снегу
             var subRt = sub.rectTransform;
             subRt.anchorMin = subRt.anchorMax = new Vector2(0f, 1f);
             subRt.pivot = new Vector2(0f, 1f);
@@ -124,7 +127,7 @@ namespace LastRide.UI
             drt.anchorMax = Vector2.one;
             drt.offsetMin = drt.offsetMax = Vector2.zero;
 
-            var box = UiKit.Panel(drt, "Box", UiKit.PanelColor);
+            var box = UiKit.Panel(drt, "Box", PopupColor());
             var brt = box.rectTransform;
             brt.anchorMin = brt.anchorMax = new Vector2(0.5f, 0.5f);
             brt.sizeDelta = new Vector2(900f, 620f);
@@ -173,6 +176,16 @@ namespace LastRide.UI
             _difficultyGroup.SetActive(false);
         }
 
+        /// <summary>Фон всплывающих окон меню: цвет панели с непрозрачностью из <c>GameBalance.menu.popupBackgroundAlpha</c>.</summary>
+        private static Color PopupColor()
+        {
+            var gm = GameManager.Instance;
+            float a = gm != null && gm.Balance != null ? gm.Balance.menu.popupBackgroundAlpha : 0.97f;
+            var c = UiKit.PanelColor;
+            c.a = a;
+            return c;
+        }
+
         private void BuildConfirm(Transform canvas, float font)
         {
             var dim = UiKit.Panel(canvas, "Confirm", new Color(0f, 0f, 0f, 0.62f));
@@ -182,7 +195,7 @@ namespace LastRide.UI
             drt.anchorMax = Vector2.one;
             drt.offsetMin = drt.offsetMax = Vector2.zero;
 
-            var box = UiKit.Panel(drt, "Box", UiKit.PanelColor);
+            var box = UiKit.Panel(drt, "Box", PopupColor());
             var brt = box.rectTransform;
             brt.anchorMin = brt.anchorMax = new Vector2(0.5f, 0.5f);
             brt.sizeDelta = new Vector2(860f, 380f);

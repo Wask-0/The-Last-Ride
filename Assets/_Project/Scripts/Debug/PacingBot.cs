@@ -224,6 +224,133 @@ namespace LastRide.DebugTools
             gm.DebugTimeMultiplier = 1f;
         }
 
+
+        /// <summary>
+        /// Достижимость топлива: для каждого подбираемого предмета ставит робота на дорогу напротив и ведёт к предмету;
+        /// «дотянулся» = ближе дальности взаимодействия. Отчёт — <see cref="Report"/> (недостижимые — строками СБОЙ).
+        /// </summary>
+        public void PickupReach(float timeScale = 4f)
+        {
+            if (Running) return;
+            StartCoroutine(Reach(timeScale));
+        }
+
+        private IEnumerator Reach(float timeScale)
+        {
+            Begin("REACH", timeScale);
+            var gm = GameManager.Instance;
+            var robot = RobotController.Active;
+            var path = RoadPath.Load();
+            gm.Warmth.Invulnerable = true;
+            gm.Spark.Invulnerable = true;
+            gm.SetPlayerMode(PlayerMode.OnFoot);
+            robot.mouseLookEnabled = false;
+            float interact = gm.Balance.movement.interactDistance;
+            int ok = 0, bad = 0;
+            var list = new System.Collections.Generic.List<LastRide.Fire.FuelPickup>(FindObjectsByType<LastRide.Fire.FuelPickup>(FindObjectsInactive.Exclude));
+            list.Sort((a, b) => path.Project(a.transform.position, -1f).distance.CompareTo(path.Project(b.transform.position, -1f).distance));
+            foreach (var p in list)
+            {
+                if (p == null || p.Suppressed || p.Collected) continue;
+                var pr = path.Project(p.transform.position, -1f);
+                var smp = path.Evaluate(pr.distance);
+                var right = Vector3.Cross(Vector3.up, smp.flatTangent).normalized;
+                Vector3 start = smp.position + right * Mathf.Sign(pr.lateral) * 1.5f + Vector3.up * 1f;
+                robot.Teleport(start, 0f);
+                gm.Progress.ResetHint();
+                float t = 0f, best = 1e9f;
+                while (t < 14f)
+                {
+                    Vector3 d = p.transform.position - robot.transform.position;
+                    float flat = new Vector2(d.x, d.z).magnitude;
+                    best = Mathf.Min(best, flat);
+                    if (flat <= interact * 0.8f) break;
+                    robot.SetLook(Mathf.Atan2(d.x, d.z) * Mathf.Rad2Deg, 0f);
+                    robot.MoveOverride = new Vector2(0f, 1f);
+                    t += Time.deltaTime;
+                    yield return null;
+                }
+                robot.MoveOverride = Vector2.zero;
+                bool reached = best <= interact;
+                if (reached) ok++; else bad++;
+                if (!reached) _log.AppendLine($"СБОЙ {p.pickupId} на {pr.distance:0} м, от оси {pr.lateral:0.0}: ближе всего {best:0.0} м");
+                Report = _log.ToString();
+            }
+            robot.MoveOverride = null;
+            robot.mouseLookEnabled = true;
+            Failed = bad > 0;
+            _log.AppendLine($"REACH: дотянулся {ok}, недоступно {bad}");
+            Report = _log.ToString();
+            Running = false;
+            gm.DebugTimeMultiplier = 1f;
+        }
+
+
+        /// <summary>
+        /// Достижимость «вторым заходом»: для предметов, id которых начинается с одного из префиксов (руины, остов грузовика),
+        /// робот пробует подойти с 8 сторон (кольцо радиусом 10 м вокруг предмета) — если хоть с одной дотянулся, предмет достижим
+        /// (обходя стены здания/кузов через проём). Отчёт — <see cref="Report"/>.
+        /// </summary>
+        public void PickupReachRing(string[] idPrefixes, float timeScale = 4f)
+        {
+            if (Running) return;
+            StartCoroutine(ReachRing(idPrefixes, timeScale));
+        }
+
+        private IEnumerator ReachRing(string[] prefixes, float timeScale)
+        {
+            Begin("REACH-RING", timeScale);
+            var gm = GameManager.Instance;
+            var robot = RobotController.Active;
+            gm.Warmth.Invulnerable = true;
+            gm.Spark.Invulnerable = true;
+            gm.SetPlayerMode(PlayerMode.OnFoot);
+            robot.mouseLookEnabled = false;
+            float interact = gm.Balance.movement.interactDistance;
+            int ok = 0, bad = 0;
+            foreach (var p in FindObjectsByType<LastRide.Fire.FuelPickup>(FindObjectsInactive.Exclude))
+            {
+                if (p == null || p.Suppressed || p.Collected) continue;
+                bool match = false;
+                foreach (var pre in prefixes) if (p.pickupId.StartsWith(pre)) match = true;
+                if (!match) continue;
+
+                float bestAll = 1e9f; int fromSide = -1;
+                for (int k = 0; k < 8 && fromSide < 0; k++)
+                {
+                    float a = k * 45f * Mathf.Deg2Rad;
+                    Vector3 start = p.transform.position + new Vector3(Mathf.Sin(a), 0f, Mathf.Cos(a)) * 10f;
+                    if (Physics.Raycast(start + Vector3.up * 30f, Vector3.down, out var hit, 80f, LastRide.Core.Layers.GroundMask)) start = hit.point + Vector3.up * 0.8f;
+                    robot.Teleport(start, 0f);
+                    float t = 0f, best = 1e9f;
+                    while (t < 9f)
+                    {
+                        Vector3 d = p.transform.position - robot.transform.position;
+                        float flat = new Vector2(d.x, d.z).magnitude;
+                        best = Mathf.Min(best, flat);
+                        if (flat <= interact * 0.8f) break;
+                        robot.SetLook(Mathf.Atan2(d.x, d.z) * Mathf.Rad2Deg, 0f);
+                        robot.MoveOverride = new Vector2(0f, 1f);
+                        t += Time.deltaTime;
+                        yield return null;
+                    }
+                    robot.MoveOverride = Vector2.zero;
+                    bestAll = Mathf.Min(bestAll, best);
+                    if (best <= interact) fromSide = k;
+                }
+                if (fromSide >= 0) { ok++; _log.AppendLine($"ок   {p.pickupId} (со стороны {fromSide * 45}°)"); }
+                else { bad++; _log.AppendLine($"СБОЙ {p.pickupId}: ближе всего {bestAll:0.0} м со всех 8 сторон"); }
+                Report = _log.ToString();
+            }
+            robot.MoveOverride = null;
+            robot.mouseLookEnabled = true;
+            Failed = bad > 0;
+            _log.AppendLine($"REACH-RING: достижимо {ok}, недоступно {bad}");
+            Report = _log.ToString();
+            Running = false;
+            gm.DebugTimeMultiplier = 1f;
+        }
+
         // ------------------------------------------------------------------ отчёт
 
         private void Begin(string what, float timeScale)

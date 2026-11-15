@@ -15,7 +15,7 @@ MonoBehaviour:
   id: A2_03
   act: 2
   required: 0
-  clip: {fileID: 0}
+  clip: {fileID: 8300000, guid: 37117dff2e7933d4a9c47705bf3e9c3d, type: 3}
   lines:
   - text: "\u042F \u0432\u0441\u0451 \u0431\u043E\u044F\u043B\u0441\u044F, \u0447\u0442\u043E
       \u0442\u044B \u0442\u0430\u043A \u0438 \u043D\u0435 \u043F\u043E\u0439\u043C\u0451\u0448\u044C,

@@ -64,6 +64,7 @@ namespace LastRide.UI
             {
                 stage.gameObject.SetActive(true);
                 stage.flower.SetGrowth(0f);
+                foreach (var l in stage.GetComponentsInChildren<Light>(true)) l.intensity = c.stageLightIntensity;
                 var brain = cam.GetComponent<CinemachineBrain>();
                 if (brain != null) brain.enabled = false;
                 cam.fieldOfView = stage.fieldOfView;
@@ -151,8 +152,9 @@ namespace LastRide.UI
             for (int i = 0; i < n; i++)
             {
                 bool title = i == 0;
-                var t = UiKit.Label(canvas.transform, c.creditsLines[i], title ? 104f : 56f, TextColor, TextAlignmentOptions.Center,
-                    title ? FontStyles.Bold : FontStyles.Normal);
+                bool signature = i == n - 1 && n > 2; // последняя строка — подпись студии, крупнее и жирнее
+                var t = UiKit.Label(canvas.transform, c.creditsLines[i], title ? 104f : (signature ? 76f : 56f), TextColor, TextAlignmentOptions.Center,
+                    title || signature ? FontStyles.Bold : FontStyles.Normal);
                 t.outlineColor = OutlineColor;
                 t.outlineWidth = 0.14f;
                 var rt = t.rectTransform;

@@ -15,7 +15,7 @@ namespace LastRide.Narrative
         private Vector3 _from, _homeScale, _homePosition;
         private Collider[] _colliders;
 
-        public string PromptText => "Взять Искру";
+        public string PromptText => "Взять лампу с Искрой";
 
         public bool CanInteract
         {

@@ -185,7 +185,9 @@ namespace LastRide.Editor
                     }
                 }
                 var go = MeshObject(parent, $"Wall_{c:00}", m, $"Wall_{c:00}", null, collider: true, ref meshCount, ref vertCount);
-                go.layer = IgnoreRaycastLayer; // сталкивается с фургоном и роботом, но не мешает камере и лучам подвески
+                // Слой RoadWall: сталкивается с фургоном (робот стены игнорирует), не мешает камере и лучам подвески.
+                int wallLayer = LayerMask.NameToLayer(LastRide.Core.Layers.RoadWall);
+                go.layer = wallLayer >= 0 ? wallLayer : IgnoreRaycastLayer;
             }
         }
 
